@@ -405,7 +405,7 @@
     <ClInclude Include="include\MeshRenderer.h" />
     <ClInclude Include="include\Renderer.h" />
     <ClInclude Include="include\Scene.h" />
-    <ClInclude Include="include\shader_h.h" />
+    <ClInclude Include="include\Shader.h" />
     <ClInclude Include="include\Transform.h" />
     <ClInclude Include="include\utils.h" />
   </ItemGroup>

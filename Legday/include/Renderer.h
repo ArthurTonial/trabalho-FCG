@@ -12,7 +12,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <chrono>
 
-#include "shader_h.h"
+#include "Shader.h"
 #include "Compute_Shader.h"
 #include "camera.h"
 #include "Transform.h"
