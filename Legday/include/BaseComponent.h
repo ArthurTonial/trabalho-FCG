@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include "Mesh.h"
-#include "Transform.h"
+#include "Renderer.h"
 
 class BaseComponent
 {

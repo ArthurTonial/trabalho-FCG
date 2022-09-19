@@ -141,6 +141,11 @@ void MainWindow::handle_input(GLFWwindow* window, float _speed) {
 
 	// imgui mouse
 	if ((MainProgram::state & (3 << 0)) == (3 << 0)) {
+		Scene::mainCamera->ProcessMouseMovement(io.MouseDelta.x, -io.MouseDelta.y, true);
+	}
+
+	if (ImGui::IsMouseDown(ImGuiMouseButton_Right)) {
+		Renderer::sun.ProcessMouseMovement(io.MouseDelta.x, io.MouseDelta.y);
 	}
 
 }

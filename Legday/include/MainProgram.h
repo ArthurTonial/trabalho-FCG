@@ -11,6 +11,9 @@
 #include <chrono>
 
 #include "MainWindow.h"
+#include "BaseObject.h"
+#include "MeshRenderer.h"
+#include "Scene.h"
 
 using namespace std;
 
@@ -19,6 +22,8 @@ class MainProgram
 public:
 
 	static unsigned int state;
+	static void initObjects();
+	static void updateObjects();
 	static void init();
 	static void run();
 };

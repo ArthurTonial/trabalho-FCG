@@ -143,6 +143,8 @@
   <ItemGroup>
     <ClInclude Include="include\BaseComponent.h" />
     <ClInclude Include="include\BaseObject.h" />
+    <ClInclude Include="include\camera.h" />
+    <ClInclude Include="include\Compute_Shader.h" />
     <ClInclude Include="include\glad\glad.h" />
     <ClInclude Include="include\GLFW\glfw3.h" />
     <ClInclude Include="include\GLFW\glfw3native.h" />
@@ -400,6 +402,10 @@
     <ClInclude Include="include\MainProgram.h" />
     <ClInclude Include="include\MainWindow.h" />
     <ClInclude Include="include\Mesh.h" />
+    <ClInclude Include="include\MeshRenderer.h" />
+    <ClInclude Include="include\Renderer.h" />
+    <ClInclude Include="include\Scene.h" />
+    <ClInclude Include="include\shader_h.h" />
     <ClInclude Include="include\Transform.h" />
     <ClInclude Include="include\utils.h" />
   </ItemGroup>
@@ -551,6 +557,8 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MainProgram.cpp" />
     <ClCompile Include="src\MainWindow.cpp" />
+    <ClCompile Include="src\MeshRenderer.cpp" />
+    <ClCompile Include="src\Renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="lib\glfw3.lib" />
