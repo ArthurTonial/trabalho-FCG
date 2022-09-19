@@ -141,6 +141,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\BaseComponent.h" />
+    <ClInclude Include="include\BaseObject.h" />
     <ClInclude Include="include\glad\glad.h" />
     <ClInclude Include="include\GLFW\glfw3.h" />
     <ClInclude Include="include\GLFW\glfw3native.h" />
@@ -397,6 +399,8 @@
     <ClInclude Include="include\KHR\khrplatform.h" />
     <ClInclude Include="include\MainProgram.h" />
     <ClInclude Include="include\MainWindow.h" />
+    <ClInclude Include="include\Mesh.h" />
+    <ClInclude Include="include\Transform.h" />
     <ClInclude Include="include\utils.h" />
   </ItemGroup>
   <ItemGroup>
@@ -542,6 +546,7 @@
     <ClCompile Include="include\imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="include\imgui\imgui_tables.cpp" />
     <ClCompile Include="include\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MainProgram.cpp" />
