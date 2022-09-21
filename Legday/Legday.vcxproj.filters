@@ -816,6 +816,18 @@
     <ClInclude Include="include\Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\CubeObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\IKleg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PlayerController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\SpiderTank.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="include\glm\detail\func_common.inl">
@@ -1259,6 +1271,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CubeObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\IKleg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PlayerController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SpiderTank.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

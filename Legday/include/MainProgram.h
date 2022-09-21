@@ -15,6 +15,9 @@
 #include "MeshRenderer.h"
 #include "Scene.h"
 
+#include "IKleg.h"
+#include "SpiderTank.h"
+
 using namespace std;
 
 class MainProgram
