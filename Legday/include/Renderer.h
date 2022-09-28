@@ -21,7 +21,6 @@
 using namespace std;
 using namespace glm;
 
-
 struct SunLight {
 	vec4 color;
 	vec3 position;
@@ -270,8 +269,6 @@ struct RenderObject {
 		VAO = vertex_array_object_id;
 	}
 };
-
-
 
 class Renderer
 {

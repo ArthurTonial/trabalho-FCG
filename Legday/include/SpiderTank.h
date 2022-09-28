@@ -91,10 +91,10 @@ public:
 
 	void build() {
 		// r legs
-		addComponent(new IKleg(getoid(), 2, 2, &transform));
-		addComponent(new IKleg(getoid(), 3, 2, &transform));
-		addComponent(new IKleg(getoid(), 4, 2, &transform));
-		addComponent(new IKleg(getoid(), 5, 2, &transform));
+		addComponent(new IKleg(getoid(), 2, 5, &transform));
+		addComponent(new IKleg(getoid(), 3, 5, &transform));
+		addComponent(new IKleg(getoid(), 4, 5, &transform));
+		addComponent(new IKleg(getoid(), 5, 5, &transform));
 
 		components[2]->componentTransform.position = vec3(1.5,0.0,1.5);
 		components[3]->componentTransform.position = vec3(-1.5,0.0,1.5);
@@ -135,7 +135,7 @@ public:
 
 		for (int i = 0; i < 4; i++) {
 
-			vec3 t = (transform.rotation * LegTarget[i]) * 2.5f + vec3(0.0f, -hieght, 0.0f) + transform.position;
+			vec3 t = (transform.rotation * LegTarget[i]) * 5.0f + vec3(0.0f, -hieght, 0.0f) + transform.position;
 			//Segment::drawCube(t, 0.1f);
 
 			if (legState[i].fetch) interpolateLeg(i);
@@ -154,7 +154,7 @@ public:
 	}
 
 	void interpolateLeg(int i) {
-		vec3 target = (transform.rotation * LegTarget[i]) * 2.5f + vec3(0.0f, -hieght, 0.0f) + transform.position;
+		vec3 target = (transform.rotation * LegTarget[i]) * 5.0f + vec3(0.0f, -hieght, 0.0f) + transform.position;
 
 		curLegPos[i] = (target - legState[i].legInitialPos) * legState[i].alphaValue + legState[i].legInitialPos;
 

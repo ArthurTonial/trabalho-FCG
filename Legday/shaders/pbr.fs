@@ -59,7 +59,9 @@ void main()
     vec4 diffuse_factor = diffuse_color * (max(0.0, dot(vertexNormal,sun_direction)) + 0.01);
     vec4 reflection_factor;
 
+    //diffuse_factor = diffuse_color * pow(max(0.0, dot(vertexNormal,camera_vector)), 3);
+
     //FragColor = lerp(light_color, diffuse_color, max(dot(vertexNormal, sun_direction), 0.0)) * shadowTest(fragPosLightSpace);
-    FragColor = (diffuse_factor + glossy_factor) * shadowTest(fragPosLightSpace);
+    FragColor = (diffuse_factor + glossy_factor) * max(shadowTest(fragPosLightSpace), pow(1.0 - (max(0.0, dot(vertexNormal,sun_direction))), 10.0));
     //FragColor = vec4(dot(vertexNormal,sun_vector));
 }
