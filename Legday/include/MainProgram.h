@@ -14,6 +14,7 @@
 #include "BaseObject.h"
 #include "MeshRenderer.h"
 #include "Scene.h"
+#include "Collision.h"
 
 #include "IKleg.h"
 #include "SpiderTank.h"

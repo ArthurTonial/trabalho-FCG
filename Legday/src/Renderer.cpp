@@ -1,6 +1,5 @@
 #include "Renderer.h"
 
-Shader Renderer::ivShader;
 RenderObject Renderer::grid;
 RenderObject Renderer::gizmo;
 RenderObject Renderer::ground;
@@ -8,12 +7,14 @@ int Renderer::SHADOW_WIDTH = 1024;
 int Renderer::SHADOW_HEIGHT = 1024;
 SunLight Renderer::sun;
 GLuint Renderer::shadowMap_FBO = 0;
+GLuint Renderer::g_NumLoadedTextures = 0;
 GLuint Renderer::shadowMap;
 Shader Renderer::simpleDepthShader;
-queue<RenderObject> Renderer::renderQ;
+Shader Renderer::gizmosShader;
+Shader Renderer::groundShader;
+queue<RenderObject*> Renderer::renderQ;
 
 void Renderer::generateGrid() {
-	ivShader = Shader("IV.vs", "IV.fs");
 
 	GLfloat v_grid[50 * 50][3];
 	GLuint* i_grid;
@@ -81,12 +82,14 @@ void Renderer::generateGrid() {
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * n_idx, NULL, GL_STATIC_DRAW);
 	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(GLuint) * n_idx, i_grid);
 
-	Shader sh = Shader("shaders/gizmos.vs", "shaders/gizmos.fs");
+	gizmosShader = Shader("shaders/gizmos.vs", "shaders/gizmos.fs");
 
-	grid = RenderObject(new Material(1.0f, 0.0f, 0.0f, vec4(0.3f, 0.3f, 0.3f, 1.0f), vec4(0.0f), sh), vertex_array_object_id, n_idx, Transform());
+	grid = RenderObject(Material(1.0f, 0.0f, 0.0f, vec4(0.3f, 0.3f, 0.3f, 1.0f), vec4(0.0f), &gizmosShader), vertex_array_object_id, n_idx, Transform());
 }
 
 void Renderer::generateGizmo(Transform transform) {
+
+	
 
 	vector<GLfloat> v_gizmos = {
 		0.0f,0.0f,0.0f,
@@ -100,9 +103,9 @@ void Renderer::generateGizmo(Transform transform) {
 		0,3
 	};
 
-	Shader sh = Shader("shaders/gizmos.vs", "shaders/gizmos.fs");
+	gizmosShader = Shader("shaders/gizmos.vs", "shaders/gizmos.fs");
 
-	gizmo = RenderObject(new Material(1.0f, 0.0f, 0.0f, vec4(0.3f, 0.3f, 0.3f, 1.0f), vec4(0.0f), sh), v_gizmos, i_gizmos, transform);
+	gizmo = RenderObject(Material(1.0f, 0.0f, 0.0f, vec4(0.3f, 0.3f, 0.3f, 1.0f), vec4(0.0f), &gizmosShader), v_gizmos, i_gizmos, transform);
 }
 
 void Renderer::generateGround(Transform transform) {
@@ -126,9 +129,9 @@ void Renderer::generateGround(Transform transform) {
 		1, 2, 3
 	};
 
-	Shader sh = Shader("shaders/ground.vs", "shaders/ground.fs");
+	groundShader = Shader("shaders/ground.vs", "shaders/ground.fs");
 
-	ground = RenderObject(new Material(1.0f, 1.0f, 0.0f, vec4(1.0f, 1.0f, 1.0f, 1.0f), vec4(1.0f, 1.0f, 1.0f, 1.0f), sh), v_ground, v_normals, i_ground, transform);
+	ground = RenderObject(Material(1.0f, 1.0f, 0.0f, vec4(1.0f, 1.0f, 1.0f, 1.0f), vec4(1.0f, 1.0f, 1.0f, 1.0f), &groundShader), v_ground, v_normals, i_ground, transform);
 }
 
 void Renderer::generateShadowMap(int width, int height) {
@@ -137,30 +140,67 @@ void Renderer::generateShadowMap(int width, int height) {
 	SHADOW_WIDTH = width;
 
 	simpleDepthShader = Shader("shaders/simpleDepth.vs", "shaders/simpleDepth.fs");
-
-	if (shadowMap_FBO == 0) {
-		glGenFramebuffers(1, &shadowMap_FBO);
-	}
-
+	/*
+	// Agora criamos objetos na GPU com OpenGL para armazenar a textura
+	GLuint sampler_id;
 	glGenTextures(1, &shadowMap);
-	glBindTexture(GL_TEXTURE_2D, shadowMap);
+	glGenSamplers(1, &sampler_id);
 
+	// Veja slides 95-96 do documento Aula_20_Mapeamento_de_Texturas.pdf
+	glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+	// Parâmetros de amostragem da textura.
+	glSamplerParameteri(sampler_id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glSamplerParameteri(sampler_id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	GLfloat border_color[4] = { 1.0,1.0,1.0,1.0 };
+	glSamplerParameterfv(sampler_id, GL_TEXTURE_BORDER_COLOR, border_color);
+
+	GLuint textureunit = g_NumLoadedTextures;
+	glActiveTexture(GL_TEXTURE0 + textureunit);
+	glBindTexture(GL_TEXTURE_2D, shadowMap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glBindSampler(textureunit, sampler_id);
+
+	g_NumLoadedTextures += 1;*/
+	
+	// generates texture for shadowmap buffer
+	glGenTextures(1, &shadowMap);
+	// binds shadowmap to slot
+	GLuint textureunit = g_NumLoadedTextures;
+	glActiveTexture(GL_TEXTURE0 + textureunit);
+	glBindTexture(GL_TEXTURE_2D, shadowMap);
+	g_NumLoadedTextures += 1;
+
+	// sets shadowmap parameters
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	GLfloat border_color[4] = { 1.0,1.0,1.0,1.0 };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
+
+
+	// sets framebuffer parameters
+	// generate new framebuffer where shadowMap scene will be draw on
+	if (shadowMap_FBO == 0) {
+		glGenFramebuffers(1, &shadowMap_FBO);
+	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, shadowMap_FBO);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowMap, 0);
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 }
 
 void Renderer::drawGrid(const Camera& camera) {
-	grid.material->setShaderOptions(camera, grid.transform);
+	grid.material.setShaderOptions(camera, grid.transform);
+	grid.material.sh->use();
 
 	glBindVertexArray(grid.VAO);
 	glLineWidth(5.0f);
@@ -169,31 +209,31 @@ void Renderer::drawGrid(const Camera& camera) {
 }
 
 void Renderer::drawGizmo(const Camera& camera, Transform tr = Transform()) {
-	gizmo.material->sh.use();
-	gizmo.material->sh.setMatrix4("mode_m", Transform(
+	gizmo.material.sh->use();
+	gizmo.material.sh->setMatrix4("mode_m", Transform(
 		tr.position + (tr.rotation * (tr.scale * gizmo.transform.position)),
 		tr.rotation * gizmo.transform.rotation,
 		gizmo.transform.scale * tr.scale).GetModelMatrix());
-	gizmo.material->sh.setMatrix4("view_m", camera.GetViewMatrix());
-	gizmo.material->sh.setMatrix4("proj_m", camera.GetProjectionMatrix());
+	gizmo.material.sh->setMatrix4("view_m", camera.GetViewMatrix());
+	gizmo.material.sh->setMatrix4("proj_m", camera.GetProjectionMatrix());
 
-	gizmo.material->sh.setFloat("diffuse", 1.0f);
-	gizmo.material->sh.setFloat("glossy", 0.0f);
-	gizmo.material->sh.setFloat("metallic", 0.0f);
-	gizmo.material->sh.setFloat4("glossy_color", vec4(0.0f));
+	gizmo.material.sh->setFloat("diffuse", 1.0f);
+	gizmo.material.sh->setFloat("glossy", 0.0f);
+	gizmo.material.sh->setFloat("metallic", 0.0f);
+	gizmo.material.sh->setFloat4("glossy_color", vec4(0.0f));
 
 	glBindVertexArray(gizmo.VAO);
 	glLineWidth(10.0f);
 
-	gizmo.material->sh.setFloat4("diffuse_color", glm::vec4(1.0f, 0.0f, 0.0f, 1.0));
+	gizmo.material.sh->setFloat4("diffuse_color", glm::vec4(1.0f, 0.0f, 0.0f, 1.0));
 
 	glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, 0);
 
-	gizmo.material->sh.setFloat4("diffuse_color", glm::vec4(0.0f, 1.0f, 0.0f, 1.0));
+	gizmo.material.sh->setFloat4("diffuse_color", glm::vec4(0.0f, 1.0f, 0.0f, 1.0));
 
 	glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, (void*)(2 * sizeof(GLuint)));
 
-	gizmo.material->sh.setFloat4("diffuse_color", glm::vec4(0.0f, 0.0f, 1.0f, 1.0));
+	gizmo.material.sh->setFloat4("diffuse_color", glm::vec4(0.0f, 0.0f, 1.0f, 1.0));
 
 	glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, (void*)(4 * sizeof(GLuint)));
 
@@ -202,14 +242,15 @@ void Renderer::drawGizmo(const Camera& camera, Transform tr = Transform()) {
 
 void Renderer::drawGround(const Camera& camera, Transform tr = Transform()) {
 
-	ground.material->setShaderOptions(camera, sun, Transform(
+	ground.material.setShaderOptions(camera, sun, Transform(
 		tr.position + (tr.rotation * (tr.scale * ground.transform.position)),
 		tr.rotation * ground.transform.rotation,
 		ground.transform.scale * tr.scale));
 
-	renderQ.push(ground);
+	renderQ.push(&ground);
 }
 
+// obsolete
 GLuint Renderer::BuildTrianglesVAO(GLfloat* vertex_position, GLfloat* vertex_normals, GLuint* face_indexes, unsigned int n_vert, unsigned int n_index)
 {
 
@@ -281,13 +322,11 @@ GLuint Renderer::BuildTrianglesVAO(GLfloat* vertex_position, GLfloat* vertex_nor
 	return vertex_array_object_id;
 }
 
-void Renderer::RenderTriangles(RenderObject ro, const Camera& camera, bool drawLines) {
+void Renderer::RenderTriangles(RenderObject& ro, const Camera& camera, bool drawLines) {
 	//std::cout << "n_idx: " << (unsigned int)n_index << std::endl;
 	
-	ro.material->setShaderOptions(camera, Renderer::sun, ro.transform);
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, shadowMap);
+	ro.material.sh->use();
+	ro.material.setShaderOptions(camera, Renderer::sun, ro.transform);
 
 	glBindVertexArray(ro.VAO);
 	
@@ -300,13 +339,14 @@ void Renderer::RenderTriangles(RenderObject ro, const Camera& camera, bool drawL
 void Renderer::drawFrame(Camera& currentCamera, int FRAME_WIDTH, int FRAME_HEIGHT) {
 	//drawGround(currentCamera);
 
-	renderQ.push(ground);
+	renderQ.push(&ground);
 
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CCW);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
+	// draws scene from sun's ortographic perspective 
 	if (shadowMap_FBO != 0) {
 		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 		glBindFramebuffer(GL_FRAMEBUFFER, shadowMap_FBO);
@@ -316,17 +356,21 @@ void Renderer::drawFrame(Camera& currentCamera, int FRAME_WIDTH, int FRAME_HEIGH
 		int n_objs = renderQ.size();
 
 		while (n_objs--) {
-			RenderObject cur = renderQ.front();
+			RenderObject* cur = renderQ.front();
 
 			simpleDepthShader.use();
-			simpleDepthShader.setMatrix4("mode_m", cur.transform.GetModelMatrix());
+			simpleDepthShader.setMatrix4("mode_m", cur->transform.GetModelMatrix());
 			simpleDepthShader.setMatrix4("view_m", sun.GetViewMatrix());
 			simpleDepthShader.setMatrix4("proj_m", sun.GetProjectionMatrix());
 
-			glBindVertexArray(cur.VAO);
+			simpleDepthShader.setInt("shadowMap", 0);
+			simpleDepthShader.setInt("TextureImage1", 1);
+			simpleDepthShader.setInt("TextureImage2", 2);
+
+			glBindVertexArray(cur->VAO);
 
 			glCullFace(GL_BACK);
-			glDrawElements(GL_TRIANGLES, cur.n_index, GL_UNSIGNED_INT, 0);
+			glDrawElements(GL_TRIANGLES, cur->n_index, GL_UNSIGNED_INT, 0);
 
 			glBindVertexArray(0);
 
@@ -334,6 +378,7 @@ void Renderer::drawFrame(Camera& currentCamera, int FRAME_WIDTH, int FRAME_HEIGH
 			renderQ.push(cur);
 		}
 	}
+
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	
@@ -350,19 +395,70 @@ void Renderer::drawFrame(Camera& currentCamera, int FRAME_WIDTH, int FRAME_HEIGH
 	// "Pintamos" todos os pixels do framebuffer com a cor definida acima
 
 	while (!renderQ.empty()) {
-		RenderObject cur = renderQ.front();
+		RenderObject* cur = renderQ.front();
 
-		//drawGizmo(currentCamera, cur.transform);
+		if(renderQ.size() > 1) drawGizmo(currentCamera, cur->transform);
 
-		RenderTriangles(cur, currentCamera, false);
+		RenderTriangles(*cur, currentCamera, false);
 
 		renderQ.pop(); 
 	}
 }
 
-
 // obsolete
 void Renderer::newFrame(GLint width, GLint height) {
 
 	
+}
+
+// Função que carrega uma imagem para ser utilizada como textura
+void Renderer::LoadTextureImage(const char* filename)
+{
+	printf("Carregando imagem \"%s\"... ", filename);
+
+	// Primeiro fazemos a leitura da imagem do disco
+	stbi_set_flip_vertically_on_load(true);
+	int width;
+	int height;
+	int channels;
+	unsigned char* data = stbi_load(filename, &width, &height, &channels, 3);
+
+	if (data == NULL)
+	{
+		fprintf(stderr, "ERROR: Cannot open image file \"%s\".\n", filename);
+		std::exit(EXIT_FAILURE);
+	}
+
+	printf("OK (%dx%d).\n", width, height);
+
+	// Agora criamos objetos na GPU com OpenGL para armazenar a textura
+	GLuint texture_id;
+	GLuint sampler_id;
+	glGenTextures(1, &texture_id);
+	glGenSamplers(1, &sampler_id);
+
+	// Veja slides 95-96 do documento Aula_20_Mapeamento_de_Texturas.pdf
+	glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	// Parâmetros de amostragem da textura.
+	glSamplerParameteri(sampler_id, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glSamplerParameteri(sampler_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	// Agora enviamos a imagem lida do disco para a GPU
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+	glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
+	glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
+
+	GLuint textureunit = g_NumLoadedTextures;
+	glActiveTexture(GL_TEXTURE0 + textureunit);
+	glBindTexture(GL_TEXTURE_2D, texture_id);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glBindSampler(textureunit, sampler_id);
+
+	stbi_image_free(data);
+
+	g_NumLoadedTextures += 1;
 }

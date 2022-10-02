@@ -12,6 +12,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <chrono>
 
+#include <stb_image.h>
+
 #include "Shader.h"
 #include "Compute_Shader.h"
 #include "camera.h"
@@ -30,12 +32,15 @@ struct SunLight {
 	float Yaw;
 	float Pitch;
 
+	float debug1;
+	float debug2;
+
 	mat4 GetViewMatrix() const {
 		return lookAt(position, position+direction, vec3(0.0f, 1.0f, 0.0f));
 	}
 
 	glm::mat4 GetProjectionMatrix() const {
-		return glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
+		return glm::ortho(-debug2, debug2, -debug2, debug2, 0.1f, debug1);
 	}
 
 	// processes input received from a mouse input system. Expects the offset value in both the x and y direction.
@@ -81,13 +86,14 @@ struct Material {
 	float glossy;
 	float diffuse;
 	float metallic;
+	float selected;
 
 	vec4 diffuse_color;
 	vec4 glossy_color;
 
-	Shader sh;
+	Shader* sh;
 
-	Material(float diffuse, float glossy, float metallic, vec4 diffuse_c, vec4 glossy_c, Shader sh = Shader("shaders/pbr.vs", "shaders/pbr.fs")) :
+	Material(float diffuse, float glossy, float metallic, vec4 diffuse_c, vec4 glossy_c, Shader* sh) :
 		glossy(glossy),
 		diffuse(diffuse),
 		metallic(metallic),
@@ -97,95 +103,134 @@ struct Material {
 	{};
 
 	void setShaderOptions(const Camera& camera, const SunLight sun, const Transform transform) {
-		sh.use();
-		sh.setFloat("diffuse", diffuse);
-		sh.setFloat("glossy", glossy);
-		sh.setFloat("metallic", metallic);
-		sh.setFloat4("diffuse_color", diffuse_color);
-		sh.setFloat4("glossy_color", glossy_color);
+		sh->setFloat("diffuse", diffuse);
+		sh->setFloat("glossy", glossy);
+		sh->setFloat("metallic", metallic);
+		sh->setFloat("selected", selected);
+		sh->setFloat4("diffuse_color", diffuse_color);
+		sh->setFloat4("glossy_color", glossy_color);
+
+		sh->setFloat4("light_color", sun.color);
+		sh->setFloat4("camera_position", vec4(camera.Position, 1.0f));
+		sh->setFloat4("camera_direction", vec4(camera.Front, 0.0f));
+		sh->setFloat4("sun_position", vec4(sun.position, 1.0f));
+		sh->setFloat4("sun_direction", vec4(sun.direction, 0.0f));
+
+		sh->setMatrix4("sun_view_m", sun.GetViewMatrix());
+		sh->setMatrix4("sun_proj_m", sun.GetProjectionMatrix());
+
+		sh->setMatrix4("mode_m", transform.GetModelMatrix());
+		sh->setMatrix4("view_m", camera.GetViewMatrix());
+		sh->setMatrix4("proj_m", camera.GetProjectionMatrix());
+
+		sh->setInt("shadowMap", 0);
 		
-		sh.setFloat4("light_color", sun.color);
-		sh.setFloat4("camera_position", vec4(camera.Position, 1.0f));
-		sh.setFloat4("camera_direction", vec4(camera.Front, 0.0f));
-		sh.setFloat4("sun_position", vec4(sun.position, 1.0f));
-		sh.setFloat4("sun_direction", vec4(sun.direction, 0.0f));
+		for (int i = 1; i < 10; i++) {
+			string name = "TextureImage";
+			name += to_string(i);
 
-		sh.setMatrix4("sun_view_m", sun.GetViewMatrix());
-		sh.setMatrix4("sun_proj_m", sun.GetProjectionMatrix());
+			sh->setInt(name, i);
+		}
 
-		sh.setMatrix4("mode_m", transform.GetModelMatrix());
-		sh.setMatrix4("view_m", camera.GetViewMatrix());
-		sh.setMatrix4("proj_m", camera.GetProjectionMatrix());
 	}
 
 	void setShaderOptions(const Camera& camera, const Transform transform) {
-		sh.use();
-		sh.setFloat("diffuse", diffuse);
-		sh.setFloat("glossy", glossy);
-		sh.setFloat("metallic", metallic);
-		sh.setFloat4("diffuse_color", diffuse_color);
-		sh.setFloat4("glossy_color", glossy_color);
+		sh->use();
+		sh->setFloat("diffuse", diffuse);
+		sh->setFloat("glossy", glossy);
+		sh->setFloat("metallic", metallic);
+		sh->setFloat("selected", selected);
+		sh->setFloat4("diffuse_color", diffuse_color);
+		sh->setFloat4("glossy_color", glossy_color);
 
-		sh.setFloat4("light_color", vec4(0.0f));
-		sh.setFloat4("camera_position", vec4(camera.Position, 1.0f));
-		sh.setFloat4("camera_direction", vec4(camera.Front, 0.0f));
-		sh.setFloat4("sun_position", vec4(0.0f));
-		sh.setFloat4("sun_direction", vec4(0.0f));
+		sh->setFloat4("light_color", vec4(0.0f));
+		sh->setFloat4("camera_position", vec4(camera.Position, 1.0f));
+		sh->setFloat4("camera_direction", vec4(camera.Front, 0.0f));
+		sh->setFloat4("sun_position", vec4(0.0f));
+		sh->setFloat4("sun_direction", vec4(0.0f));
 
-		sh.setMatrix4("sun_view_m", mat4(1.0f));
-		sh.setMatrix4("sun_proj_m", mat4(1.0f));
+		sh->setMatrix4("sun_view_m", mat4(1.0f));
+		sh->setMatrix4("sun_proj_m", mat4(1.0f));
 
-		sh.setMatrix4("mode_m", transform.GetModelMatrix());
-		sh.setMatrix4("view_m", camera.GetViewMatrix());
-		sh.setMatrix4("proj_m", camera.GetProjectionMatrix());
+		sh->setMatrix4("mode_m", transform.GetModelMatrix());
+		sh->setMatrix4("view_m", camera.GetViewMatrix());
+		sh->setMatrix4("proj_m", camera.GetProjectionMatrix());
+
+		sh->setInt("shadowMap", 0);
+
+		for (int i = 1; i < 10; i++) {
+			string name = "TextureImage";
+			name += to_string(i);
+
+			sh->setInt(name, i);
+		}
 	}
 
 	void setShaderOptions(const SunLight sun, const Transform transform) {
-		sh.use();
-		sh.setFloat("diffuse", diffuse);
-		sh.setFloat("glossy", glossy);
-		sh.setFloat("metallic", metallic);
-		sh.setFloat4("diffuse_color", diffuse_color);
-		sh.setFloat4("glossy_color", glossy_color);
+		sh->use();
+		sh->setFloat("diffuse", diffuse);
+		sh->setFloat("glossy", glossy);
+		sh->setFloat("metallic", metallic);
+		sh->setFloat("selected", selected);
+		sh->setFloat4("diffuse_color", diffuse_color);
+		sh->setFloat4("glossy_color", glossy_color);
 
-		sh.setFloat4("camera_position", vec4(sun.position, 1.0f));
-		sh.setFloat4("camera_direction", vec4(sun.direction, 0.0f));
+		sh->setFloat4("camera_position", vec4(sun.position, 1.0f));
+		sh->setFloat4("camera_direction", vec4(sun.direction, 0.0f));
 
-		sh.setMatrix4("mode_m", transform.GetModelMatrix());
-		sh.setMatrix4("view_m", sun.GetViewMatrix());
-		sh.setMatrix4("proj_m", sun.GetProjectionMatrix());
+		sh->setMatrix4("mode_m", transform.GetModelMatrix());
+		sh->setMatrix4("view_m", sun.GetViewMatrix());
+		sh->setMatrix4("proj_m", sun.GetProjectionMatrix());
 
-		sh.setMatrix4("sun_view_m", mat4(1.0f));
-		sh.setMatrix4("sun_proj_m", mat4(1.0f));
-		sh.setFloat4("light_color", vec4(0.0f));
-		sh.setFloat4("sun_direction", vec4(0.0f));
-		sh.setFloat4("sun_position", vec4(0.0f));
+		sh->setMatrix4("sun_view_m", mat4(1.0f));
+		sh->setMatrix4("sun_proj_m", mat4(1.0f));
+		sh->setFloat4("light_color", vec4(0.0f));
+		sh->setFloat4("sun_direction", vec4(0.0f));
+		sh->setFloat4("sun_position", vec4(0.0f));
+
+		sh->setInt("shadowMap", 0);
+
+		for (int i = 1; i < 10; i++) {
+			string name = "TextureImage";
+			name += to_string(i);
+
+			sh->setInt(name, i);
+		}
 	}
 };
 
 struct RenderObject {
-	Material* material;
+	Transform transform;
+	Material material;
 	GLuint VAO;
 	int n_index;
-	Transform transform;
+
+	glm::vec3 bbox_min;
+	glm::vec3 bbox_max;
 
 	RenderObject() :
-		material(nullptr),
+		material(Material(1.0f,1.0f,1.0f,vec4(1.0f), vec4(1.0f), nullptr)),
 		VAO(0),
 		n_index(0),
-		transform(Transform()) {}
+		transform(Transform()),
+		bbox_min(vec3(0.0)),
+		bbox_max(vec3(0.0)) {}
 
-	RenderObject(Material* material, GLuint vao, int idx, Transform tr) :
+	RenderObject(Material material, GLuint vao, int idx, Transform tr) :
 		material(material),
 		VAO(vao),
 		n_index(idx),
-		transform(tr) {}
+		transform(tr),
+		bbox_min(vec3(0.0)),
+		bbox_max(vec3(0.0)) {}
 
-	RenderObject(Material* material, vector<GLfloat>& v_pos, vector<GLuint>& indices, Transform tr) :
+	RenderObject(Material material, vector<GLfloat>& v_pos, vector<GLuint>& indices, Transform tr) :
 		material(material),
 		VAO(0),
 		n_index(indices.size()),
-		transform(tr) {
+		transform(tr),
+		bbox_min(vec3(0.0)),
+		bbox_max(vec3(0.0)) {
 	
 		GLuint vertex_array_object_id;
 		glGenVertexArrays(1, &vertex_array_object_id);
@@ -217,11 +262,13 @@ struct RenderObject {
 		VAO = vertex_array_object_id;
 	}
 
-	RenderObject(Material* material, vector<GLfloat>& v_pos, vector<GLfloat>& v_normals, vector<GLuint>& indices, Transform tr) :
+	RenderObject(Material material, vector<GLfloat>& v_pos, vector<GLfloat>& v_normals, vector<GLuint>& indices, Transform tr) :
 		material(material),
 		VAO(0),
 		n_index(indices.size()),
-		transform(tr) {
+		transform(tr),
+		bbox_min(vec3(0.0)),
+		bbox_max(vec3(0.0)) {
 
 
 		GLuint vertex_array_object_id;
@@ -277,14 +324,16 @@ class Renderer
 	static RenderObject ground;
 	static int SHADOW_WIDTH;
 	static int SHADOW_HEIGHT;
-	static Shader ivShader;
 	static GLuint shadowMap_FBO;
 	static Shader simpleDepthShader;
+	static Shader gizmosShader;
+	static Shader groundShader;
 
 public:
+	static GLuint g_NumLoadedTextures;
 	static GLuint shadowMap;
 	static SunLight sun;
-	static queue<RenderObject> renderQ;
+	static queue<RenderObject*> renderQ;
 
 	// returns a VAO for the specified vertex array and indice array;
 	static GLuint BuildTrianglesVAO(GLfloat* vertex_position, GLfloat* vertex_normals, GLuint* face_indexes, unsigned int n_vert, unsigned int n_index);
@@ -308,6 +357,8 @@ public:
 
 	static void drawGround(const Camera& camera, Transform tr);
 
-	static void RenderTriangles(RenderObject ro, const Camera& camera, bool drawLines);
+	static void RenderTriangles(RenderObject& ro, const Camera& camera, bool drawLines);
+
+	static void LoadTextureImage(const char* filename);
 };
 

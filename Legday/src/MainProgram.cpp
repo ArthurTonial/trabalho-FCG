@@ -22,15 +22,17 @@ void updateCameras() {
 void MainProgram::init() {
 	MainWindow::initUI();
 
-	//glfwSetCursorPosCallback(MainWindow::window, mouse_callback);
-	//glfwSetScrollCallback(MainWindow::window, scroll_callback);
-
 	Renderer::generateGrid();
 	Renderer::generateGizmo(Transform(vec3(0.0, 0.0, 0.0), quat(1.0, vec3(0.0, 0.0, 0.0)), vec3(3.0, 3.0, 3.0)));
 	Renderer::generateGround(Transform(vec3(0.0, 0.0, 0.0), quat(1.0, vec3(0.0, 0.0, 0.0)), vec3(100.0, 100.0, 100.0)));
 	Renderer::generateShadowMap(1024, 1024);
 
 	MainWindow::viewport_tex = Renderer::shadowMap;
+	
+	Renderer::LoadTextureImage("textures/legTipColor.png");
+	Renderer::LoadTextureImage("textures/legTipRME.png");
+
+	Renderer::sun.color = vec4(1.0f);
 
 	// ------------------------------ TEST --------------------------------------------------//
 	SpiderTank* myTank = new SpiderTank(0, 6);
@@ -48,7 +50,7 @@ void MainProgram::init() {
 	myTank->transform.lookAt(vec3(1.0, 0.0, 1.0));
 
 	// ------------------------------ TEST --------------------------------------------------//
-
+	
 	initObjects();
 }
 
@@ -60,7 +62,16 @@ void MainProgram::run() {
 
 		MainWindow::handle_input(MainWindow::window, Scene::mainCamera->MovementSpeed);
 
-		//Renderer::newFrame(MainWindow::SCR_WIDTH, MainWindow::SCR_HEIGHT);
+		if (state >> 3 & 1) {
+			printf("Tamo\n");
+		}
+
+		Renderer::sun.debug1 = MainWindow::paramsf[0];
+		Renderer::sun.debug2 = MainWindow::paramsf[1];
+
+		Renderer::sun.target = Scene::objects[0]->transform.position;
+		Renderer::sun.updateVectors();
+
 
 		updateCameras();
 

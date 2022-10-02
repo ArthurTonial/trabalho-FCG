@@ -5,15 +5,14 @@
 
 class MeshRenderer : public BaseComponent
 {
-	Mesh* objectMesh;
-	GLuint VAO = 0;
-	Material* material;
-	GLuint n_idx;
+	Material*		objectMaterial;
+	Mesh*			objectMesh;
+	RenderObject	renderObj;
 
 public:
 	MeshRenderer(unsigned int oid, unsigned int cid, Transform* myobjTransform) : BaseComponent(oid, cid, myobjTransform)
 	{
-
+		
 	}
 
 	void initComponent();
@@ -23,6 +22,6 @@ public:
 	void endComponent();
 
 	void setMesh(Mesh* m) { objectMesh = m; };
-	void setMaterial(Material* s) { material = s; };
+	void setMaterial(Material* s) { objectMaterial = s; };
 };
 
