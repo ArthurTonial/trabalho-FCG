@@ -144,6 +144,7 @@
     <ClInclude Include="include\BaseComponent.h" />
     <ClInclude Include="include\BaseObject.h" />
     <ClInclude Include="include\camera.h" />
+    <ClInclude Include="include\Collision.h" />
     <ClInclude Include="include\Compute_Shader.h" />
     <ClInclude Include="include\CubeObject.h" />
     <ClInclude Include="include\glad\glad.h" />
@@ -410,6 +411,8 @@
     <ClInclude Include="include\Scene.h" />
     <ClInclude Include="include\Shader.h" />
     <ClInclude Include="include\SpiderTank.h" />
+    <ClInclude Include="include\stb_image.h" />
+    <ClInclude Include="include\tiny_obj_loader.h" />
     <ClInclude Include="include\Transform.h" />
     <ClInclude Include="include\utils.h" />
   </ItemGroup>
@@ -567,6 +570,8 @@
     <ClCompile Include="src\PlayerController.cpp" />
     <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\SpiderTank.cpp" />
+    <ClCompile Include="src\stb_image.cpp" />
+    <ClCompile Include="src\tiny_obj_loader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="lib\glfw3.lib" />

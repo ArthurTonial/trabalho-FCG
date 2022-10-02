@@ -45,17 +45,11 @@ public:
 			v_positions[i * 3 + 2] = v.z;
 		}
 
-		Mesh* cubeMesh = new Mesh();
+		//Mesh cubeMesh = Mesh("meshes/legMid.obj");
 
-		cubeMesh->setPositions(v_positions, 8);
-		cubeMesh->setIndexes(v_indexes, 12);
-		cubeMesh->n_idx = 12 * 3;
-		cubeMesh->n_vert = 8;
-		cubeMesh->computeNormals();
-
-		this->addComponent(new MeshRenderer(oid, 0, &transform));
-		((MeshRenderer*)getComponents()[0])->setMesh(cubeMesh);
-		((MeshRenderer*)getComponents()[0])->setMaterial(new Material(1.0f, 1.0f, 0.0f, vec4(0.5f, 0.5f, 0.5f, 1.0f), vec4(1.0f, 1.0f, 1.0f, 1.0f)));
+		//this->addComponent(new MeshRenderer(oid, 0, &transform));
+		//((MeshRenderer*)getComponents()[0])->setMesh(&cubeMesh);
+		//((MeshRenderer*)getComponents()[0])->setMaterial(new Material(1.0f, 1.0f, 0.0f, vec4(0.5f, 0.5f, 0.5f, 1.0f), vec4(1.0f, 1.0f, 1.0f, 1.0f)));
 	}
 
 };

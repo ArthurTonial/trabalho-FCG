@@ -3,7 +3,7 @@
 int MainWindow::SCR_WIDTH = 1500;
 int MainWindow::SCR_HEIGHT = 1000;
 bool MainWindow::is_open_bool;
-float MainWindow::paramsf[8] = {0.0, 0.0, 20, 0, 2.66, 2.0, 2.0, 5.5};
+float MainWindow::paramsf[8] = {150.0, 30.0, 20, 0, 2.66, 2.0, 2.0, 5.5};
 int MainWindow::paramsi[8] = {3, 0, 0, 0, 0, 0, 0, 0};
 bool MainWindow::is_pressed[6] = { false, false ,false ,false ,false ,false };
 GLFWwindow* MainWindow::window;
@@ -130,8 +130,8 @@ void MainWindow::handle_input(GLFWwindow* window, float _speed) {
 	}
 
 	if (ImGui::IsKeyPressed(ImGuiKey_Escape)) {
-		MainProgram::state ^= (3 << 0);
-		if ((MainProgram::state & (3 << 0)) == (3 << 0)) {
+		MainProgram::state ^= (1 << 3);
+		if ((MainProgram::state >> 3) & 1) {
 			glfwSetInputMode(MainWindow::window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		}
 		else {
@@ -140,13 +140,13 @@ void MainWindow::handle_input(GLFWwindow* window, float _speed) {
 	}
 
 	// imgui mouse
-	if ((MainProgram::state & (3 << 0)) == (3 << 0)) {
-		Scene::mainCamera->ProcessMouseMovement(io.MouseDelta.x, -io.MouseDelta.y, true);
-	}
-
 	if (ImGui::IsMouseDown(ImGuiMouseButton_Right)) {
 		Renderer::sun.ProcessMouseMovement(io.MouseDelta.x, io.MouseDelta.y);
 	}
+	else if ((MainProgram::state >> 3) & 1) {
+		Scene::mainCamera->ProcessMouseMovement(io.MouseDelta.x, -io.MouseDelta.y, true);
+	}
+
 
 }
 
@@ -159,7 +159,7 @@ void MainWindow::drawViewport() {
 	//window_flags |= ImGuiWindowFlags_NoCollapse;
 	window_flags |= ImGuiWindowFlags_NoResize;
 
-	ImGui::SetNextWindowSize(ImVec2(1024.0f, 1024.0f));
+	ImGui::SetNextWindowSize(ImVec2(512.0f, 512.0f));
 	ImGui::Begin("ShadowMap", NULL, window_flags);
 
 
@@ -187,8 +187,8 @@ void MainWindow::drawOptions() {
 		MainProgram::state |= (1 << 2);
 	}
 
-	SliderFloat("camera_X", &paramsf[0], -10.0, 10.0, "%.5f");
-	SliderFloat("camera_Y", &paramsf[1], -10.0, 10.0, "%.5f");
+	SliderFloat("camera_X", &paramsf[0], 10.0, 1000.0, "%.2f");
+	SliderFloat("camera_Y", &paramsf[1], 5.0, 50.0, "%.5f");
 	SliderFloat("camera_Z", &paramsf[2], -10.0, 10.0, "%.5f");
 	SliderFloat("camera_YAW", &paramsf[3], -90.0, 90.0, "%.5f");
 	SliderFloat("camera_PITCH", &paramsf[4], -90.0, 90.0, "%.5f");

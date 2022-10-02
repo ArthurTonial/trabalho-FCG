@@ -44,13 +44,14 @@ public:
 		LegTarget(vector<vec3>(4)),
 		legState(vector<legInterpolationState>(4))
 	{
-		Mesh* bodyMesh = new Mesh("meshes/spiderBody.ms");
+		Mesh* bodyMesh = new Mesh("meshes/sphere.obj");
+		Shader* bodyShader = new Shader("shaders/pbr.vs", "shaders/pbr.fs");
 
 		addComponent(new MeshRenderer(oid, 0, &transform));
 		((MeshRenderer*)getComponents()[0])->setMesh(bodyMesh);
-		((MeshRenderer*)getComponents()[0])->setMaterial(new Material(1.0f, 10.0f, 0.0f, vec4(0.5f, 0.5f, 0.5f,1.0f), vec4(1.0f, 1.0f, 1.0f, 1.0f)));
-		((MeshRenderer*)getComponents()[0])->componentTransform = Transform(vec3(0.0), quat(1.0, vec3(0.0)), vec3(0.2, 0.2, 0.2));
-		((MeshRenderer*)getComponents()[0])->componentTransform.lookAt(vec3(1.0, 0.0, 0.0));
+		((MeshRenderer*)getComponents()[0])->setMaterial(new Material(1.0f, 80.0f, 0.0f, vec4(0.5f, 0.5f, 0.5f,1.0f), vec4(1.0f, 1.0f, 1.0f, 1.0f), bodyShader));
+		((MeshRenderer*)getComponents()[0])->componentTransform = Transform(vec3(0.0), quat(1.0, vec3(0.0)), vec3(1.0, 1.0, 1.0));
+		((MeshRenderer*)getComponents()[0])->componentTransform.lookAt(vec3(0.0, 0.0, 1.0));
 
 		addComponent(new PlayerController(oid, 1, &transform));
 	}
@@ -91,10 +92,10 @@ public:
 
 	void build() {
 		// r legs
-		addComponent(new IKleg(getoid(), 2, 5, &transform));
-		addComponent(new IKleg(getoid(), 3, 5, &transform));
-		addComponent(new IKleg(getoid(), 4, 5, &transform));
-		addComponent(new IKleg(getoid(), 5, 5, &transform));
+		addComponent(new IKleg(getoid(), 2, 2, &transform));
+		addComponent(new IKleg(getoid(), 3, 2, &transform));
+		addComponent(new IKleg(getoid(), 4, 2, &transform));
+		addComponent(new IKleg(getoid(), 5, 2, &transform));
 
 		components[2]->componentTransform.position = vec3(1.5,0.0,1.5);
 		components[3]->componentTransform.position = vec3(-1.5,0.0,1.5);
@@ -135,7 +136,7 @@ public:
 
 		for (int i = 0; i < 4; i++) {
 
-			vec3 t = (transform.rotation * LegTarget[i]) * 5.0f + vec3(0.0f, -hieght, 0.0f) + transform.position;
+			vec3 t = (transform.rotation * LegTarget[i]) * 2.5f + vec3(0.0f, -hieght, 0.0f) + transform.position;
 			//Segment::drawCube(t, 0.1f);
 
 			if (legState[i].fetch) interpolateLeg(i);
@@ -154,7 +155,7 @@ public:
 	}
 
 	void interpolateLeg(int i) {
-		vec3 target = (transform.rotation * LegTarget[i]) * 5.0f + vec3(0.0f, -hieght, 0.0f) + transform.position;
+		vec3 target = (transform.rotation * LegTarget[i]) * 2.5f + vec3(0.0f, -hieght, 0.0f) + transform.position;
 
 		curLegPos[i] = (target - legState[i].legInitialPos) * legState[i].alphaValue + legState[i].legInitialPos;
 

@@ -1,14 +1,8 @@
 #include "IKleg.h"
 
 Mesh Segment::midSegmentMesh = Mesh("meshes/legMid.obj");
-Mesh Segment::endSegmentMesh = Mesh("meshes/legTip.obj");
-
-void Segment::drawCube(glm::vec3 pos, float size) {
-	CubeObject cb = CubeObject(0, pos, vec3(0.0), vec3(size));
-
-	cb.initComponents();
-	cb.runComponents();
-}
+Mesh Segment::endSegmentMesh = Mesh("meshes/legTip2.obj");
+Shader Segment::LegShader;
 
 void Segment::drawSegment() {
 	body.runComponents();

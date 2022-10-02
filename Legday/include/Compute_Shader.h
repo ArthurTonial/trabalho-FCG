@@ -64,13 +64,13 @@ public:
 	}
 	void runProgram(int x, int y, int z) {
 		glUseProgram(ID);
-		glDispatchCompute((x + 4) / 8, (y + 2) / 4, z);
+		glDispatchCompute(x, y, z);
 		glMemoryBarrier(GL_ALL_BARRIER_BITS);
 	}
 	// utility uniform functions
 	// ------------------------------------------------------------------------
 	void setTexture(const std::string& name, GLuint& texture) const{
-		glUniform1i(glGetUniformLocation(ID, "screen"), 0);
+		glUniform1i(glGetUniformLocation(ID, name.c_str()), texture);
 	}
 	void setBool(const std::string& name, bool value) const
 	{

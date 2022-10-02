@@ -33,6 +33,8 @@ struct Segment {
 		child(NULL),
 		parent(parent)
 	{
+		LegShader = Shader("shaders/pbr.vs", "shaders/pbr.fs");
+
 		body.addComponent(new MeshRenderer(body.getoid(), 0, &(body.transform)));
 		if (type == 0) {
 			((MeshRenderer*)body.getComponents()[0])->setMesh(&midSegmentMesh);
@@ -41,12 +43,11 @@ struct Segment {
 			((MeshRenderer*)body.getComponents()[0])->setMesh(&endSegmentMesh);
 		}
 
-		((MeshRenderer*)body.getComponents()[0])->setMaterial(new Material(1.0f, 50.0f, 0.0f, vec4(0.5f, 0.5f, 0.5f, 1.0f), vec4(1.0f, 1.0f, 1.0f, 1.0f)));
+		((MeshRenderer*)body.getComponents()[0])->setMaterial(new Material(1.0f, 10.0f, 0.0f, vec4(0.5f, 0.5f, 0.5f, 1.0f), vec4(1.0f, 1.0f, 1.0f, 1.0f), &LegShader));
 		
 		((MeshRenderer*)body.getComponents()[0])->componentTransform.scale = vec3(size, size, size);
 
 		body.initComponents();
-
 
 		transform = &body.transform;
 	}
@@ -54,8 +55,6 @@ struct Segment {
 	~Segment(){
 		if(parent != NULL) parent->child = child;
 	}
-
-	static void drawCube(glm::vec3 pos, float size);
 
 	void drawSegment();
 
@@ -81,14 +80,6 @@ public:
 		target(vec3(2.5, 0.0, 0.0)),
 		root(NULL)
 	{
-	}
-	
-
-	static void drawLine(vec3 a, vec3 b) {
-		for (int i = 1; i <= 10; i++) {
-			vec3 p = (b - a) * (1.0f * i) / 10.0f + a;
-			Segment::drawCube(p, 0.05);
-		}
 	}
 
 	void build();
