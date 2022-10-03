@@ -69,11 +69,9 @@ public:
 		wantDir = normalize(vec3(Scene::mainCamera->Front.x, 0.0f, Scene::mainCamera->Front.z));
 	}
 
-	void updateDirectionWithKeyboard() {
-		return;
-	}
-
 	void run() {
+
+		((PlayerController*)getComponents()[1])->is_active = controlCamera;
 
 		if (lastTime > 0.0f) {
 			deltaTime = glfwGetTime() - lastTime;
@@ -81,18 +79,13 @@ public:
 			if (controlCamera) {
 				updateDirectionWithCamera();
 			}
-			else {
-				updateDirectionWithKeyboard();
-			}
 			vec3 forceVec = normalize(transform.getFront() - wantDir);
 			float forceMag = std::min(20.0f, length(transform.getFront() - wantDir) + turnSpeed);
 
 			transform.lookAt(transform.getFront() + forceVec * forceMag * deltaTime);
 
-
 			updateLegs();
 		}
-
 		lastTime = glfwGetTime();
 	}
 
@@ -146,18 +139,16 @@ public:
 			//Segment::drawCube(t, 0.1f);
 
 			if (legState[i].fetch) interpolateLeg(i);
-			else if (length(t - curLegPos[i]) > 1.7f and upLegs & (1<<i)) {
+			else if (length(t - curLegPos[i]) > 1.7f and upLegs & (1 << i)) {
 				legState[i].fetch = true;
 				legState[i].legInitialPos = curLegPos[i];
-					
+
 				if (i == 0 or i == 3) upLegs = 0b1001;
 				else upLegs = 0b0110;
 			}
 
-			((IKleg*)components[i+2])->target = curLegPos[i];
-			
+			((IKleg*)components[i + 2])->target = curLegPos[i];
 		}
-
 	}
 
 	void interpolateLeg(int i) {

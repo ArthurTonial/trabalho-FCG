@@ -8,6 +8,12 @@ void PlayerController::initComponent() {
 
 void PlayerController::execute() {
 
+	if (!is_active) {
+		acceleration = vec3(0.0f, 0.0f, 0.0f);
+		velocity = vec3(0.0f, 0.0f, 0.0f);
+		return;
+	}
+
 	keyboardInput();
 
 	if (deltaTime > 0.0f) {

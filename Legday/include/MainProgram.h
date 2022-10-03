@@ -15,6 +15,7 @@
 #include "MeshRenderer.h"
 #include "Scene.h"
 #include "Collision.h"
+#include "Bezier.h"
 
 #include "IKleg.h"
 #include "SpiderTank.h"

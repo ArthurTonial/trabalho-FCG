@@ -44,7 +44,7 @@ void MainProgram::init() {
 	Scene::objects.push_back(myTank);
 
 	((PlayerController*)(myTank->getComponents()[1]))->is_pressed = MainWindow::is_pressed;
-	((PlayerController*)(myTank->getComponents()[1]))->speed = 5.0f;
+	((PlayerController*)(myTank->getComponents()[1]))->speed = 10.0f;
 	((PlayerController*)(myTank->getComponents()[1]))->acc = ((PlayerController*)(myTank->getComponents()[1]))->speed * 4;
 	((PlayerController*)(myTank->getComponents()[1]))->damp = 3.0f;
 
@@ -60,6 +60,10 @@ void MainProgram::init() {
 void MainProgram::run() {
 
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+	SpiderTank* st = ((SpiderTank*)Scene::objects[0]);
+	Bezier bezier;
+	float t = 0, dir = 1;
 
 	while (MainWindow::is_open()) {
 
@@ -78,11 +82,36 @@ void MainProgram::run() {
 
 		if ((state >> 0) & 1) {
 			state ^= (1 << 0);
-			((SpiderTank*)Scene::objects[0])->resetShader();
+			st->resetShader();
 		}
 
-		if (state >> 3 & 1) {
-			printf("Tamo\n");
+		if ((state >> 5) & 1) {
+
+			if (st->controlCamera) {
+				float size = MainWindow::paramsf[3];
+
+				vec3 pos1 = st->transform.position;
+				vec3 pos2 = pos1 + size * st->transform.getFront() + 2*size * st->transform.getRight();
+				vec3 pos3 = pos1 + size * st->transform.getFront() - 2*size * st->transform.getRight();;
+				vec3 pos4 = pos1 + 3*size * st->transform.getFront();
+
+				bezier = Bezier(pos1, pos2, pos3, pos4);
+				t = 0, dir = 1;
+			}
+			float speed = MainWindow::paramsf[2];
+
+			st->controlCamera = false;
+			st->transform.position = bezier.getPosition(t);
+			st->wantDir = dir * bezier.getTangent(t);
+
+			t += speed * dir * deltaTime;
+
+
+			if (t > 1.0f) t = 1.0f, dir *= -1;
+			if (t < 0.0f) t = 0.0f, dir *= -1;
+		}
+		else {
+			st->controlCamera = true;
 		}
 
 		Renderer::sun.debug1 = MainWindow::paramsf[0];

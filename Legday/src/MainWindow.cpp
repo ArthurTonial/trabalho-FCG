@@ -139,6 +139,10 @@ void MainWindow::handle_input(GLFWwindow* window, float _speed) {
 		}
 	}
 
+	if (ImGui::IsKeyPressed('B')) {
+		MainProgram::state ^= (1 << 5);
+	}
+
 	// imgui mouse
 	if (ImGui::IsMouseDown(ImGuiMouseButton_Right)) {
 		Renderer::sun.ProcessMouseMovement(io.MouseDelta.x, io.MouseDelta.y);

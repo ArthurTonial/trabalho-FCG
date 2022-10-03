@@ -27,12 +27,14 @@ public:
 	float speed;
 	float acc;
 	bool* is_pressed;
+	bool is_active;
 
 	PlayerController(unsigned int oid, unsigned int cid, Transform* myobjTransform) : BaseComponent(oid, cid, myobjTransform),
 	acceleration(vec3(0.0f,0.0f,0.0f)),
 	velocity(vec3(0.0f,0.0f,0.0f)),
 	deltaTime(0.0f),
-	lastTime(0.0f)
+	lastTime(0.0f),
+	is_active(true)
 	{}
 
 	void initComponent();
@@ -44,4 +46,3 @@ public:
 	void keyboardInput();
 
 };
-

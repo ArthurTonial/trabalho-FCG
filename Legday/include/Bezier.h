@@ -12,6 +12,9 @@ class Bezier {
 public:
 	std::vector<vec3> control_points;
 
+	Bezier() :
+		control_points(std::vector<vec3>())
+	{}
 	Bezier(std::vector<vec3> cp) :
 		control_points(cp)
 	{}
@@ -20,14 +23,15 @@ public:
 	{}
 	
 	vec3 getPosition(float t) {
-		t = std::fmin(t, 1);
-		t = std::fmax(t, 0);
-
 		vec3 c = control_points[0] * powf(1 - t, 3)
 			   + control_points[1] * powf(1 - t, 2) * 3.0f * t
 			   + control_points[2] * powf(1 - t, 1) * 3.0f * t * t
 			   + control_points[3] * powf(t, 3);
 
 		return c;
+	}
+
+	vec3 getTangent(float t) {
+		return normalize(getPosition(t) - getPosition(t - 0.1));
 	}
 };
