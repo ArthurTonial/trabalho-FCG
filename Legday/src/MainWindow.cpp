@@ -3,11 +3,12 @@
 int MainWindow::SCR_WIDTH = 1500;
 int MainWindow::SCR_HEIGHT = 1000;
 bool MainWindow::is_open_bool;
-float MainWindow::paramsf[8] = {150.0, 30.0, 20, 0, 2.66, 2.0, 2.0, 5.5};
-int MainWindow::paramsi[8] = {3, 0, 0, 0, 0, 0, 0, 0};
+float MainWindow::paramsf[8] = {150.0, 30.0, 0.5, 1.0, 2.66, 2.0, 2.0, 5.5};
+int MainWindow::paramsi[8] = {2, 0, 0, 0, 0, 0, 0, 0};
 bool MainWindow::is_pressed[6] = { false, false ,false ,false ,false ,false };
 GLFWwindow* MainWindow::window;
 GLuint MainWindow::viewport_tex;
+bool options_hovered;
 
 
 int MainWindow::initUI() {
@@ -139,6 +140,8 @@ void MainWindow::handle_input(GLFWwindow* window, float _speed) {
 		}
 	}
 
+	
+
 	if (ImGui::IsKeyPressed('B')) {
 		MainProgram::state ^= (1 << 5);
 	}
@@ -147,8 +150,13 @@ void MainWindow::handle_input(GLFWwindow* window, float _speed) {
 	if (ImGui::IsMouseDown(ImGuiMouseButton_Right)) {
 		Renderer::sun.ProcessMouseMovement(io.MouseDelta.x, io.MouseDelta.y);
 	}
-	else if ((MainProgram::state >> 3) & 1) {
+	if ((MainProgram::state >> 3) & 1) {
 		Scene::mainCamera->ProcessMouseMovement(io.MouseDelta.x, -io.MouseDelta.y, true);
+	}
+	else {
+		if (ImGui::IsMouseDown(ImGuiMouseButton_Left) and !options_hovered) {
+			Scene::mainCamera->ProcessMouseMovement(io.MouseDelta.x, -io.MouseDelta.y, true);
+		}
 	}
 
 
@@ -182,30 +190,29 @@ void MainWindow::drawOptions() {
 	using namespace ImGui;
 
 	Begin("Options");
+	if (ImGui::IsWindowHovered() or ImGui::IsAnyItemHovered()) {
+		options_hovered = true;
+	}
+	else {
+		options_hovered = false;
+	}
 
 
-	if (Button("Switch Shaders", ImVec2(150.0f, 50.0f))) {
+	if (Button("Comp Shaders", ImVec2(150.0f, 50.0f))) {
 		MainProgram::state ^= (1 << 0);
 	}
-	if (Button("Reset", ImVec2(150.0f, 50.0f))) {
-		MainProgram::state |= (1 << 2);
+	if (Button("Build Legs", ImVec2(150.0f, 50.0f))) {
+		MainProgram::state ^= (1 << 2);
 	}
 
-	SliderFloat("camera_X", &paramsf[0], 10.0, 1000.0, "%.2f");
-	SliderFloat("camera_Y", &paramsf[1], 5.0, 50.0, "%.5f");
-	SliderFloat("camera_Z", &paramsf[2], -10.0, 10.0, "%.5f");
-	SliderFloat("camera_YAW", &paramsf[3], -90.0, 90.0, "%.5f");
-	SliderFloat("camera_PITCH", &paramsf[4], -90.0, 90.0, "%.5f");
-	SliderFloat("stateX", &paramsf[5], -10.0f, 10.0f, "%.5f");
-	SliderFloat("stateY", &paramsf[6], -10.0f, 10.0f, "%.5f");
-	SliderFloat("stateZ", &paramsf[7], -10.0f, 10.0f, "%.5f");
-
-	ImGui::Text("%d", paramsi[0]);
-	SameLine();
-	BeginGroup();
-	if (Button("+", ImVec2(30.0f, 30.0f))) paramsi[0]++;
-	if (Button("-", ImVec2(30.0f, 30.0f))) paramsi[0]--;
-	EndGroup();
+	SliderFloat("Sun nearplane", &paramsf[0], 10.0, 1000.0, "%.2f");
+	SliderFloat("Sun fov", &paramsf[1], 5.0, 50.0, "%.5f");
+	SliderFloat("Bezier Path Speed", &paramsf[2], 0.0, 1.0, "%.5f");
+	SliderFloat("Bezier Path Size", &paramsf[3], 1.0, 10.0, "%.5f");
+	SliderInt("N Segs", &paramsi[0], 2, 6);
+	//SliderFloat("stateX", &paramsf[5], -10.0f, 10.0f, "%.5f");
+	//SliderFloat("stateY", &paramsf[6], -10.0f, 10.0f, "%.5f");
+	//SliderFloat("stateZ", &paramsf[7], -10.0f, 10.0f, "%.5f");
 
 
 	End();

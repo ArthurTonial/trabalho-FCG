@@ -18,6 +18,8 @@ struct legInterpolationState {
 class SpiderTank : public BaseObject
 {
 	int nLegs;
+	float t_dist;
+	float follow_dist;
 	float interpSpeed;
 	float deltaTime;
 	float lastTime;
@@ -35,6 +37,8 @@ public:
 	SpiderTank(unsigned int oid, int nLegs) : BaseObject(oid),
 		nLegs(nLegs),
 		deltaTime(-1.0f),
+		t_dist(2.5f),
+		follow_dist(1.7f),
 		lastTime(-1.0f),
 		interpSpeed(10.0f),
 		hieght(1.5f),
@@ -89,57 +93,67 @@ public:
 		lastTime = glfwGetTime();
 	}
 
-	void build() {
+	void build(int nSegs) {
 		// r legs
-		addComponent(new IKleg(getoid(), 2, 2, &transform));
-		addComponent(new IKleg(getoid(), 3, 2, &transform));
-		addComponent(new IKleg(getoid(), 4, 2, &transform));
-		addComponent(new IKleg(getoid(), 5, 2, &transform));
-
-		components[2]->componentTransform.position = vec3(1.5,0.0,1.5);
-		components[3]->componentTransform.position = vec3(-1.5,0.0,1.5);
-		components[4]->componentTransform.position = vec3(1.5,0.0,-1.5);
-		components[5]->componentTransform.position = vec3(-1.5,0.0,-1.5);
-
-		/*
-		*
-		*	0     1
-		*    \ z /
-		*    x-'
-		*    /   \
-		*   2     3
-		* 
-		*/
-
-		LegTarget[0] = (components[2]->getTrueTransform().position) - transform.position;
-		LegTarget[1] = (components[3]->getTrueTransform().position) - transform.position;
-		LegTarget[2] = (components[4]->getTrueTransform().position) - transform.position;
-		LegTarget[3] = (components[5]->getTrueTransform().position) - transform.position;
-
-		((IKleg*)components[2])->target = curLegPos[0];
-		((IKleg*)components[3])->target = curLegPos[1];
-		((IKleg*)components[4])->target = curLegPos[2];
-		((IKleg*)components[5])->target = curLegPos[3];
-
-		for (int i = 0; i < 4; i++) {
-			legState[i] = {
-				curLegPos[i],
-				0.0f,
-				false
-			};
+		
+		if (getComponents().size() > 2) {
+			printf("opppaa\n");
+			getComponents()[2] = new IKleg(getoid(), 2, nSegs, &transform);
+			getComponents()[3] = new IKleg(getoid(), 3, nSegs, &transform);
+			getComponents()[4] = new IKleg(getoid(), 4, nSegs, &transform);
+			getComponents()[5] = new IKleg(getoid(), 5, nSegs, &transform);
 		}
+		else {
+			addComponent(new IKleg(getoid(), 2, nSegs, &transform));
+			addComponent(new IKleg(getoid(), 3, nSegs, &transform));
+			addComponent(new IKleg(getoid(), 4, nSegs, &transform));
+			addComponent(new IKleg(getoid(), 5, nSegs, &transform));
+		
 
+			components[2]->componentTransform.position = vec3(1.5,0.0,1.5);
+			components[3]->componentTransform.position = vec3(-1.5,0.0,1.5);
+			components[4]->componentTransform.position = vec3(1.5,0.0,-1.5);
+			components[5]->componentTransform.position = vec3(-1.5,0.0,-1.5);
+
+			/*
+			*
+			*	0     1
+			*    \ z /
+			*    x-'
+			*    /   \
+			*   2     3
+			* 
+			*/
+
+			LegTarget[0] = (components[2]->getTrueTransform().position) - transform.position;
+			LegTarget[1] = (components[3]->getTrueTransform().position) - transform.position;
+			LegTarget[2] = (components[4]->getTrueTransform().position) - transform.position;
+			LegTarget[3] = (components[5]->getTrueTransform().position) - transform.position;
+
+			((IKleg*)components[2])->target = curLegPos[0];
+			((IKleg*)components[3])->target = curLegPos[1];
+			((IKleg*)components[4])->target = curLegPos[2];
+			((IKleg*)components[5])->target = curLegPos[3];
+
+			for (int i = 0; i < 4; i++) {
+				legState[i] = {
+					curLegPos[i],
+					0.0f,
+					false
+				};
+			}
+		}
 	}
 
 	void updateLegs() {
 
 		for (int i = 0; i < 4; i++) {
 
-			vec3 t = (transform.rotation * LegTarget[i]) * 2.5f + vec3(0.0f, -hieght, 0.0f) + transform.position;
+			vec3 t = (transform.rotation * LegTarget[i]) * t_dist + vec3(0.0f, -hieght, 0.0f) + transform.position;
 			//Segment::drawCube(t, 0.1f);
 
 			if (legState[i].fetch) interpolateLeg(i);
-			else if (length(t - curLegPos[i]) > 1.7f and upLegs & (1 << i)) {
+			else if (length(t - curLegPos[i]) > follow_dist and upLegs & (1 << i)) {
 				legState[i].fetch = true;
 				legState[i].legInitialPos = curLegPos[i];
 
@@ -152,7 +166,7 @@ public:
 	}
 
 	void interpolateLeg(int i) {
-		vec3 target = (transform.rotation * LegTarget[i]) * 2.5f + vec3(0.0f, -hieght, 0.0f) + transform.position;
+		vec3 target = (transform.rotation * LegTarget[i]) * t_dist + vec3(0.0f, -hieght, 0.0f) + transform.position;
 
 		curLegPos[i] = (target - legState[i].legInitialPos) * legState[i].alphaValue + legState[i].legInitialPos;
 

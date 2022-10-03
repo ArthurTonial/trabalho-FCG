@@ -10,14 +10,14 @@ unsigned int MainProgram::state = 0;
 // set up scene
 
 LookAtCamera thirdPersonCamera(vec3(0.0, 20.0, 20.0), vec3(0.0f, 1.0f, 0.0f), -90.0f, -20.0f);
-LookAtCamera FixedCamera(vec3(0.0, 20.0, 20.0), vec3(0.0f, 1.0f, 0.0f), -90.0f, -20.0f);
+FreeCamera GodCamera(vec3(0.0, 30.0, 30.0), vec3(0.0f, 1.0f, 0.0f), -90.0f, -20.0f);
 
 Camera* Scene::mainCamera = (Camera*)&thirdPersonCamera;
 vector<BaseObject*> Scene::objects;
 
 void updateCameras() {
 	Scene::mainCamera->ScreenRatio = ((float)MainWindow::SCR_WIDTH / MainWindow::SCR_HEIGHT);
-	((LookAtCamera*)Scene::mainCamera)->target = Scene::objects[0]->transform.position;
+	if (((MainProgram::state >> 3) & 1)) ((LookAtCamera*)Scene::mainCamera)->target = Scene::objects[0]->transform.position;
 	Scene::mainCamera->updateCameraVectors();
 }
 
@@ -49,7 +49,7 @@ void MainProgram::init() {
 	((PlayerController*)(myTank->getComponents()[1]))->damp = 3.0f;
 
 	myTank->transform.position += vec3(0.0f, 1.5f, 0.0f);
-	myTank->build();
+	myTank->build(MainWindow::paramsi[0]);
 	myTank->transform.lookAt(vec3(1.0, 0.0, 1.0));
 
 	// ------------------------------ TEST --------------------------------------------------//
@@ -80,9 +80,22 @@ void MainProgram::run() {
 
 		Material::time += deltaTime;
 
+		if (!((MainProgram::state >> 3) & 1)) {
+			Scene::mainCamera = (Camera*)&GodCamera;
+		}
+		else {
+			Scene::mainCamera = (Camera*)&thirdPersonCamera;
+		}
+
 		if ((state >> 0) & 1) {
 			state ^= (1 << 0);
 			st->resetShader();
+		}
+
+		if ((state >> 2) & 1) {
+			state ^= (1 << 2);
+			printf("ops\n");
+			st->build(MainWindow::paramsi[0]);
 		}
 
 		if ((state >> 5) & 1) {
