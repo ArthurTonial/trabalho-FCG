@@ -62,9 +62,9 @@ void MainProgram::run() {
 
 		MainWindow::handle_input(MainWindow::window, Scene::mainCamera->MovementSpeed);
 
-		if (state >> 3 & 1) {
+		/*if (state >> 3 & 1) {
 			printf("Tamo\n");
-		}
+		}*/
 
 		Renderer::sun.debug1 = MainWindow::paramsf[0];
 		Renderer::sun.debug2 = MainWindow::paramsf[1];

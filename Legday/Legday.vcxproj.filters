@@ -837,6 +837,9 @@
     <ClInclude Include="include\Collision.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\Bezier.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="include\glm\detail\func_common.inl">
@@ -1298,6 +1301,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\tiny_obj_loader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Bezier.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

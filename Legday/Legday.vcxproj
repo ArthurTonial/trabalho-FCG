@@ -143,6 +143,7 @@
   <ItemGroup>
     <ClInclude Include="include\BaseComponent.h" />
     <ClInclude Include="include\BaseObject.h" />
+    <ClInclude Include="include\Bezier.h" />
     <ClInclude Include="include\camera.h" />
     <ClInclude Include="include\Collision.h" />
     <ClInclude Include="include\Compute_Shader.h" />
@@ -559,6 +560,7 @@
     <ClCompile Include="include\imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="include\imgui\imgui_tables.cpp" />
     <ClCompile Include="include\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\Bezier.cpp" />
     <ClCompile Include="src\CubeObject.cpp" />
     <ClCompile Include="src\IKleg.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
