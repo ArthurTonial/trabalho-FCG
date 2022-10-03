@@ -18,14 +18,14 @@ struct legInterpolationState {
 class SpiderTank : public BaseObject
 {
 	int nLegs;
-	float t_dist;
-	float follow_dist;
 	float interpSpeed;
 	float deltaTime;
 	float lastTime;
 	float turnSpeed = 10.0f;
 	int upLegs;
 public:
+	float t_dist;
+	float follow_dist;
 	bool controlCamera;
 	float hieght;
 	vector<vec3> curLegPos;
@@ -55,7 +55,7 @@ public:
 		((MeshRenderer*)getComponents()[0])->setMesh(bodyMesh);
 		((MeshRenderer*)getComponents()[0])->setMaterial(new Material(1.0f, 80.0f, 0.0f, vec4(0.5f, 0.5f, 0.5f,1.0f), vec4(1.0f, 1.0f, 1.0f, 1.0f), bodyShader));
 		((MeshRenderer*)getComponents()[0])->componentTransform = Transform(vec3(0.0), quat(1.0, vec3(0.0)), vec3(1.0, 1.0, 1.0));
-		((MeshRenderer*)getComponents()[0])->componentTransform.lookAt(vec3(0.0, 0.0, 1.0));
+		((MeshRenderer*)getComponents()[0])->componentTransform.lookAt(vec3(1.0, 0.0, 0.0));
 
 		addComponent(new PlayerController(oid, 1, &transform));
 	}

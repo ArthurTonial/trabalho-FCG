@@ -61,6 +61,7 @@ void MainProgram::run() {
 
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 
+	Mesh easteregg("meshes/cow.obj");
 	SpiderTank* st = ((SpiderTank*)Scene::objects[0]);
 	Bezier bezier;
 	float t = 0, dir = 1;
@@ -95,7 +96,11 @@ void MainProgram::run() {
 		if ((state >> 2) & 1) {
 			state ^= (1 << 2);
 			printf("ops\n");
-			st->build(MainWindow::paramsi[0]);
+			//st->build(MainWindow::paramsi[0]);
+			((MeshRenderer*)st->getComponents()[0])->setMesh(&easteregg);
+			((MeshRenderer*)st->getComponents()[0])->componentTransform = Transform(vec3(0.0), quat(1.0, vec3(0.0)), vec3(2.0, 2.0, 2.0));
+			((MeshRenderer*)st->getComponents()[0])->componentTransform.lookAt(vec3(1.0, 0.0, 0.0));
+			((MeshRenderer*)st->getComponents()[0])->initComponent();
 		}
 
 		if ((state >> 5) & 1) {
@@ -126,6 +131,9 @@ void MainProgram::run() {
 		else {
 			st->controlCamera = true;
 		}
+
+		st->t_dist = MainWindow::paramsf[5];
+		st->follow_dist = MainWindow::paramsf[6];
 
 		Renderer::sun.debug1 = MainWindow::paramsf[0];
 		Renderer::sun.debug2 = MainWindow::paramsf[1];
