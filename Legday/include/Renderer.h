@@ -83,6 +83,8 @@ struct SunLight {
 };
 
 struct Material {
+	static float time;
+
 	float glossy;
 	float diffuse;
 	float metallic;
@@ -103,6 +105,9 @@ struct Material {
 	{};
 
 	void setShaderOptions(const Camera& camera, const SunLight sun, const Transform transform) {
+
+		sh->setFloat("time", time);
+
 		sh->setFloat("diffuse", diffuse);
 		sh->setFloat("glossy", glossy);
 		sh->setFloat("metallic", metallic);
@@ -136,6 +141,8 @@ struct Material {
 
 	void setShaderOptions(const Camera& camera, const Transform transform) {
 		sh->use();
+		sh->setFloat("time", time);
+
 		sh->setFloat("diffuse", diffuse);
 		sh->setFloat("glossy", glossy);
 		sh->setFloat("metallic", metallic);
@@ -168,6 +175,8 @@ struct Material {
 
 	void setShaderOptions(const SunLight sun, const Transform transform) {
 		sh->use();
+		sh->setFloat("time", time);
+
 		sh->setFloat("diffuse", diffuse);
 		sh->setFloat("glossy", glossy);
 		sh->setFloat("metallic", metallic);

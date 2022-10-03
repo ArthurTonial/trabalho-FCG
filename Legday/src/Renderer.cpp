@@ -1,5 +1,6 @@
 #include "Renderer.h"
 
+float Material::time;
 RenderObject Renderer::grid;
 RenderObject Renderer::gizmo;
 RenderObject Renderer::ground;
@@ -397,7 +398,7 @@ void Renderer::drawFrame(Camera& currentCamera, int FRAME_WIDTH, int FRAME_HEIGH
 	while (!renderQ.empty()) {
 		RenderObject* cur = renderQ.front();
 
-		if(renderQ.size() > 1) drawGizmo(currentCamera, cur->transform);
+		//if(renderQ.size() > 1) drawGizmo(currentCamera, cur->transform);
 
 		RenderTriangles(*cur, currentCamera, false);
 
@@ -438,8 +439,8 @@ void Renderer::LoadTextureImage(const char* filename)
 	glGenSamplers(1, &sampler_id);
 
 	// Veja slides 95-96 do documento Aula_20_Mapeamento_de_Texturas.pdf
-	glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 	// Parâmetros de amostragem da textura.
 	glSamplerParameteri(sampler_id, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);

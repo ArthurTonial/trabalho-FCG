@@ -25,6 +25,8 @@ class MainProgram
 {
 public:
 
+	static float deltaTime;
+	static float lastTime;
 	static unsigned int state;
 	static void initObjects();
 	static void updateObjects();

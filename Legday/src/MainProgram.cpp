@@ -4,6 +4,8 @@
 using namespace std;
 using namespace glm;
 
+float MainProgram::deltaTime = 0.0;
+float MainProgram::lastTime = 0.0;
 unsigned int MainProgram::state = 0;
 // set up scene
 
@@ -31,6 +33,7 @@ void MainProgram::init() {
 	
 	Renderer::LoadTextureImage("textures/legTipColor.png");
 	Renderer::LoadTextureImage("textures/legTipRME.png");
+	Renderer::LoadTextureImage("textures/sphere.png");
 
 	Renderer::sun.color = vec4(1.0f);
 
@@ -62,16 +65,31 @@ void MainProgram::run() {
 
 		MainWindow::handle_input(MainWindow::window, Scene::mainCamera->MovementSpeed);
 
-		/*if (state >> 3 & 1) {
+		if (deltaTime > 0.0f) {
+			deltaTime = glfwGetTime() - lastTime;
+			lastTime = glfwGetTime();
+		}
+		else {
+			lastTime = glfwGetTime();
+			deltaTime = 1.0f;
+		}
+
+		Material::time += deltaTime;
+
+		if ((state >> 0) & 1) {
+			state ^= (1 << 0);
+			((SpiderTank*)Scene::objects[0])->resetShader();
+		}
+
+		if (state >> 3 & 1) {
 			printf("Tamo\n");
-		}*/
+		}
 
 		Renderer::sun.debug1 = MainWindow::paramsf[0];
 		Renderer::sun.debug2 = MainWindow::paramsf[1];
 
 		Renderer::sun.target = Scene::objects[0]->transform.position;
 		Renderer::sun.updateVectors();
-
 
 		updateCameras();
 

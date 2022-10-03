@@ -5,11 +5,12 @@
 
 class MeshRenderer : public BaseComponent
 {
+
+public:
 	Material*		objectMaterial;
 	Mesh*			objectMesh;
 	RenderObject	renderObj;
 
-public:
 	MeshRenderer(unsigned int oid, unsigned int cid, Transform* myobjTransform) : BaseComponent(oid, cid, myobjTransform)
 	{
 		

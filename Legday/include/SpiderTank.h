@@ -45,7 +45,7 @@ public:
 		legState(vector<legInterpolationState>(4))
 	{
 		Mesh* bodyMesh = new Mesh("meshes/sphere.obj");
-		Shader* bodyShader = new Shader("shaders/pbr.vs", "shaders/pbr.fs");
+		Shader* bodyShader = new Shader("shaders/pbr.vs", "shaders/sphereShader.fs");
 
 		addComponent(new MeshRenderer(oid, 0, &transform));
 		((MeshRenderer*)getComponents()[0])->setMesh(bodyMesh);
@@ -54,6 +54,12 @@ public:
 		((MeshRenderer*)getComponents()[0])->componentTransform.lookAt(vec3(0.0, 0.0, 1.0));
 
 		addComponent(new PlayerController(oid, 1, &transform));
+	}
+
+	void resetShader() {
+		printf("opa\n");
+		((MeshRenderer*)getComponents()[0])->objectMaterial->sh = new Shader("shaders/pbr.vs", "shaders/sphereShader.fs");
+		((MeshRenderer*)getComponents()[0])->initComponent();
 	}
 
 	void init() {
@@ -78,11 +84,11 @@ public:
 			else {
 				updateDirectionWithKeyboard();
 			}
-
 			vec3 forceVec = normalize(transform.getFront() - wantDir);
 			float forceMag = std::min(20.0f, length(transform.getFront() - wantDir) + turnSpeed);
 
 			transform.lookAt(transform.getFront() + forceVec * forceMag * deltaTime);
+
 
 			updateLegs();
 		}
@@ -140,7 +146,7 @@ public:
 			//Segment::drawCube(t, 0.1f);
 
 			if (legState[i].fetch) interpolateLeg(i);
-			else if (length(t - curLegPos[i]) > 2.0f and upLegs & (1<<i)) {
+			else if (length(t - curLegPos[i]) > 1.7f and upLegs & (1<<i)) {
 				legState[i].fetch = true;
 				legState[i].legInitialPos = curLegPos[i];
 					
@@ -163,7 +169,7 @@ public:
 
 		legState[i].alphaValue += interpSpeed * deltaTime;
 
-		if (legState[i].alphaValue >= 1.4f) {
+		if (legState[i].alphaValue >= 1.5f) {
 			legState[i].fetch = false;
 			legState[i].alphaValue = 0.0f;
 			upLegs = 0b1111;

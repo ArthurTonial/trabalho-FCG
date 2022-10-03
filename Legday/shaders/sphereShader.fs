@@ -59,31 +59,44 @@ float shadowTest(vec4 fPosLSpace){
     return shadow;
 }
 
+vec4 saturate(vec4 a){
+    return min(vec4(1.0), max(vec4(0.0), a));
+}
+
 void main()
 {
-    vec4 l = -sun_direction;
-    vec4 n = normalize(vertexNormal);
-    vec4 p = vertexPos;
-    vec4 v = normalize(camera_position - p);
+    vec4 object_origin = mode_m * vec4(0.0,0.0,0.0,1.0);
+    vec3 n = normalize(vertexNormal).xyz;
+    vec3 v = normalize(camera_position - vertexPos).xyz;
 
-    vec4 r = -l + 2*n*dot(n, l);
+    vec3 r = normalize(cross(v, vec3(0.0,1.0,0.0)));
+    vec3 u = normalize(cross(v, r));
 
-    float q = texture(TextureImage2, texcoords).r;
+    vec3 l = -sun_direction.xyz;
 
-    vec4 Kd = texture(TextureImage1, texcoords);
-    vec4 Ks = vec4(1.0,1.0,1.0,1.0);
-    vec4 Ka = vec4(0.0,0.0,0.0,1.0);
+    vec3 ref = -l + 2*n*dot(n, l);
 
-    vec4 I = light_color;
-    vec4 Ia = vec4(0.0,0.0,0.0,1.0);
+    vec2 customUV = vec2(dot(n,r)+0.5, -1*dot(n,u)+0.5);
 
-    vec4 glossy_factor =  Ks * I * pow(max(0.0,dot(r,v)), q * 32.0) * shadowTest(fragPosLightSpace);
-    vec4 diffuse_factor = Kd * I * (max(0.0, dot(n, l)) + 0.3) * max(0.2,shadowTest(fragPosLightSpace));
-    vec4 ambient_factor = Ka * Ia; 
-    vec4 reflection_factor;
+    float customU = atan(customUV.r - 0.5, customUV.g - 0.5).r / 6.283 + 0.5;
 
-    //diffuse_factor = diffuse_color * pow(max(0.0, dot(vertexNormal,camera_vector)), 3);
+    vec2 customUV2 = vec2(customU, pow(dot(n, v),2));
 
-    FragColor = max(diffuse_factor + glossy_factor + ambient_factor, selected * vec4(1.0,1.0,0.5,1.0));
-    //FragColor = (inverse(transpose(mode_m)) * texture(TextureImage3, texcoords));
+    float t = time - round(time);
+    float t2 = time * 0.25 - round(time * 0.25);
+
+    vec4 center_color = vec4(1.00, 0.0200, 0.281, 1.0);
+    vec4 edge_color1 = vec4(0.560, 0.00, 0.960, 1.0);
+    vec4 edge_color2 = vec4(0.430, 0.00, 0.394, 1.0);
+
+    vec4 edge = lerp(edge_color1, edge_color2, dot(n, v) * 28.0 - 29.7 * texture(TextureImage3, customUV2 * vec2(2.0, 0.5) + vec2(0.0, t2)).g);
+    vec4 center = lerp(edge_color2 * 0.5, center_color, pow(dot(n, v), 14));
+    vec4 base = lerp(edge, center, pow(dot(n, v), 1));
+    vec4 whisps = center_color;
+    vec4 unlit = lerp(base, whisps, texture(TextureImage3, customUV2 + vec2(0.0,t)).r);
+
+    //vec2 customUV = vec2(0.0);
+    
+    FragColor = unlit + vec4(2.0) * pow(max(0.0,dot(ref,v)), 12.0) * shadowTest(fragPosLightSpace);
+    //FragColor = whisps + vec4(2.0) * pow(max(0.0,dot(ref,v)), 12.0) * shadowTest(fragPosLightSpace);
 }
