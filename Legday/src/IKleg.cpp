@@ -15,7 +15,7 @@ void Segment::update(vec3 pos, vec3 target, vec3 up, float legLength) {
 	
 	vec3 t = (target - pos);
 	vec3 upVec = normalize(pos - up);
-	float segLen = len * size;
+	float segLen = len;
 	float f = (segLen / legLength);
 	
 	float h = segLen;
@@ -38,7 +38,7 @@ void IKleg::build() {
 	
 	int temp = nSegs;
 	for (int i = 0; i < temp; i++) {
-		addLeg(2.66f);
+		addLeg(2.5f);
 	}
 
 	update();
@@ -122,8 +122,7 @@ void IKleg::update() {
 	
 	float rootSz = (root->len * root->size);
 
-	vec3 up = (cross(normalize(t), cross(vec3(0.0,-1.0,0.0), normalize(t)))) + t / 2.0f;
-	up = 0.1f * (cross(normalize(t), cross(vec3(0.0, -1.0, 0.0), normalize(t)))) + t / 2.0f;
+	vec3 up = 0.1f * (cross(normalize(t), cross(-getTrueTransform().getUp(), normalize(t)))) + t / 2.0f;
 
 	root->update(getTrueTransform().position, t + getTrueTransform().position, up + getTrueTransform().position, legLength);
 }

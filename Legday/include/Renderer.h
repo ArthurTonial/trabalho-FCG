@@ -40,7 +40,7 @@ struct SunLight {
 	}
 
 	glm::mat4 GetProjectionMatrix() const {
-		return glm::ortho(-debug2, debug2, -debug2, debug2, 0.1f, debug1);
+		return glm::ortho(-debug2, debug2, -debug2, debug2, 1.0f, debug1);
 	}
 
 	// processes input received from a mouse input system. Expects the offset value in both the x and y direction.
@@ -71,7 +71,7 @@ struct SunLight {
 		pos.y = sin(glm::radians(-Pitch));
 		pos.z = sin(glm::radians(Yaw)) * cos(glm::radians(-Pitch));
 
-		position = pos * 50.0f + target;
+		position = pos * 200.0f + target;
 
 		glm::vec3 front = normalize(target - position);
 
@@ -324,6 +324,75 @@ struct RenderObject {
 
 		VAO = vertex_array_object_id;
 	}
+
+	RenderObject(Material material, vector<GLfloat>& v_pos, vector<GLfloat>& v_normals, vector<GLuint>& indices, vector<GLfloat>& v_uvs, Transform tr) :
+		material(material),
+		VAO(0),
+		n_index(indices.size()),
+		transform(tr),
+		bbox_min(vec3(0.0)),
+		bbox_max(vec3(0.0)) {
+
+
+		GLuint vertex_array_object_id;
+		glGenVertexArrays(1, &vertex_array_object_id);
+		glBindVertexArray(vertex_array_object_id);
+
+		// binding positions
+
+		GLuint VBO_NDC_coefficients_id;
+		glGenBuffers(1, &VBO_NDC_coefficients_id);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO_NDC_coefficients_id);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * v_pos.size(), NULL, GL_STATIC_DRAW);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GLfloat) * v_pos.size(), v_pos.data());
+
+
+		GLuint location = 0; // "(location = 0)" em "shader_vertex.glsl"
+		GLint  number_of_dimensions = 3; // vec3 em "shader_vertex.glsl"
+		glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(location);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		// binding normals
+
+		GLuint VBO_normals;
+		glGenBuffers(1, &VBO_normals);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO_normals);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * v_normals.size(), NULL, GL_STATIC_DRAW);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GLfloat) * v_normals.size(), v_normals.data());
+
+
+		location = 1; // "(location = 0)" em "shader_vertex.glsl"
+		number_of_dimensions = 4; // vec4 em "shader_vertex.glsl"
+		glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(location);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		// binding uvs
+
+		GLuint VBO_uvs;
+		glGenBuffers(1, &VBO_uvs);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO_uvs);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * v_uvs.size(), NULL, GL_STATIC_DRAW);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GLfloat) * v_uvs.size(), v_uvs.data());
+
+
+		location = 2; // "(location = 0)" em "shader_vertex.glsl"
+		number_of_dimensions = 2; // vec4 em "shader_vertex.glsl"
+		glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(location);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		// bind indices
+
+		GLuint indices_id;
+		glGenBuffers(1, &indices_id);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_id);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices.size(), NULL, GL_STATIC_DRAW);
+		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(GLuint) * indices.size(), indices.data());
+
+		VAO = vertex_array_object_id;
+	}
 };
 
 class Renderer
@@ -339,9 +408,11 @@ class Renderer
 	static Shader groundShader;
 
 public:
+	static RenderObject skybox;
 	static GLuint g_NumLoadedTextures;
 	static GLuint shadowMap;
 	static SunLight sun;
+	static bool drawGizmos;
 	static queue<RenderObject*> renderQ;
 
 	// returns a VAO for the specified vertex array and indice array;
@@ -363,8 +434,16 @@ public:
 	static void drawGrid(const Camera& camera);
 
 	static void drawGizmo(const Camera& camera, Transform tr);
+	
+	static void drawLine(const Camera& camera, vec3 dir, vec3 pos, float length, vec4 color = vec4(1.0,0.0,0.0,1.0));
+	
+	static void drawLine(const Camera& camera, vec3 posa, vec3 posb, vec4 color = vec4(1.0,0.0,0.0,1.0));
+
+	static void drawAABB(const Camera& camera, vec3 bb_min, vec3 bb_max, vec4 color = vec4(1.0,0.0,0.0,1.0));
 
 	static void drawGround(const Camera& camera, Transform tr);
+
+	static void drawSkybox(const Camera& camera);
 
 	static void RenderTriangles(RenderObject& ro, const Camera& camera, bool drawLines);
 

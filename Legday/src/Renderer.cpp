@@ -4,6 +4,7 @@ float Material::time;
 RenderObject Renderer::grid;
 RenderObject Renderer::gizmo;
 RenderObject Renderer::ground;
+RenderObject Renderer::skybox;
 int Renderer::SHADOW_WIDTH = 1024;
 int Renderer::SHADOW_HEIGHT = 1024;
 SunLight Renderer::sun;
@@ -13,6 +14,7 @@ GLuint Renderer::shadowMap;
 Shader Renderer::simpleDepthShader;
 Shader Renderer::gizmosShader;
 Shader Renderer::groundShader;
+bool Renderer::drawGizmos = false;
 queue<RenderObject*> Renderer::renderQ;
 
 void Renderer::generateGrid() {
@@ -89,9 +91,6 @@ void Renderer::generateGrid() {
 }
 
 void Renderer::generateGizmo(Transform transform) {
-
-	
-
 	vector<GLfloat> v_gizmos = {
 		0.0f,0.0f,0.0f,
 		1.0f,0.0f,0.0f,
@@ -125,14 +124,21 @@ void Renderer::generateGround(Transform transform) {
 		0.0f, -1.0f, 0.0f, 0.0f
 	};
 
+	vector<GLfloat> v_uvs = {
+		0.0f, 0.0f,
+		0.0f, 1.0f,
+		1.0f, 1.0f,
+		1.0f, 0.0f,
+	};
+
 	vector<GLuint> i_ground = {
 		0, 1, 3,
 		1, 2, 3
 	};
 
-	groundShader = Shader("shaders/ground.vs", "shaders/ground.fs");
+	groundShader = Shader("shaders/pbr.vs", "shaders/ground.fs");
 
-	ground = RenderObject(Material(1.0f, 1.0f, 0.0f, vec4(1.0f, 1.0f, 1.0f, 1.0f), vec4(1.0f, 1.0f, 1.0f, 1.0f), &groundShader), v_ground, v_normals, i_ground, transform);
+	ground = RenderObject(Material(1.0f, 1.0f, 0.0f, vec4(1.0f, 1.0f, 1.0f, 1.0f), vec4(1.0f, 1.0f, 1.0f, 1.0f), &groundShader), v_ground, v_normals, i_ground, v_uvs, transform);
 }
 
 void Renderer::generateShadowMap(int width, int height) {
@@ -210,11 +216,10 @@ void Renderer::drawGrid(const Camera& camera) {
 }
 
 void Renderer::drawGizmo(const Camera& camera, Transform tr = Transform()) {
+	tr.scale *= 2.0f;
+
 	gizmo.material.sh->use();
-	gizmo.material.sh->setMatrix4("mode_m", Transform(
-		tr.position + (tr.rotation * (tr.scale * gizmo.transform.position)),
-		tr.rotation * gizmo.transform.rotation,
-		gizmo.transform.scale * tr.scale).GetModelMatrix());
+	gizmo.material.sh->setMatrix4("mode_m", tr.GetModelMatrix());
 	gizmo.material.sh->setMatrix4("view_m", camera.GetViewMatrix());
 	gizmo.material.sh->setMatrix4("proj_m", camera.GetProjectionMatrix());
 
@@ -241,6 +246,63 @@ void Renderer::drawGizmo(const Camera& camera, Transform tr = Transform()) {
 	glBindVertexArray(0);
 }
 
+void Renderer::drawLine(const Camera& camera, vec3 posa, vec3 posb, vec4 color) {
+	vec3 d = (posb - posa);
+	drawLine(camera, normalize(d), posa, length(d), color);
+}
+
+void Renderer::drawLine(const Camera& camera, vec3 dir, vec3 pos, float length, vec4 color) {
+	Transform tr = Transform(pos, quat(1.0, vec3(0.0, 0.0, 0.0)), vec3(length));
+	tr.lookAt(-dir);
+
+	gizmo.material.sh->use();
+	gizmo.material.sh->setMatrix4("mode_m", tr.GetModelMatrix());
+	gizmo.material.sh->setMatrix4("view_m", camera.GetViewMatrix());
+	gizmo.material.sh->setMatrix4("proj_m", camera.GetProjectionMatrix());
+
+	gizmo.material.sh->setFloat("diffuse", 1.0f);
+	gizmo.material.sh->setFloat("glossy", 0.0f);
+	gizmo.material.sh->setFloat("metallic", 0.0f);
+	gizmo.material.sh->setFloat4("glossy_color", vec4(0.0f));
+
+	glBindVertexArray(gizmo.VAO);
+	glLineWidth(5.0f);
+
+	gizmo.material.sh->setFloat4("diffuse_color", color);
+
+	glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, (void*)(4 * sizeof(GLuint)));
+
+	glBindVertexArray(0);
+}
+
+void Renderer::drawAABB(const Camera& camera, vec3 bb_min, vec3 bb_max, vec4 color) {
+	vec3 v[8] = {
+		bb_min,
+		vec3(bb_min.x, bb_min.y, bb_max.z),
+		vec3(bb_max.x, bb_min.y, bb_max.z),
+		vec3(bb_max.x, bb_max.y, bb_max.z),
+		vec3(bb_max.x, bb_max.y, bb_min.z),
+		vec3(bb_min.x, bb_max.y, bb_min.z),
+		vec3(bb_min.x, bb_max.y, bb_max.z),
+		vec3(bb_max.x, bb_min.y, bb_min.z)
+	};
+
+	drawLine(camera, v[0], v[1], color);
+	drawLine(camera, v[0], v[5], color);
+	drawLine(camera, v[6], v[1], color);
+	drawLine(camera, v[5], v[6], color);
+
+	drawLine(camera, v[3], v[2], color);
+	drawLine(camera, v[4], v[3], color);
+	drawLine(camera, v[7], v[2], color);
+	drawLine(camera, v[7], v[4], color);
+
+	drawLine(camera, v[0], v[7], color);
+	drawLine(camera, v[1], v[2], color);
+	drawLine(camera, v[3], v[6], color);
+	drawLine(camera, v[4], v[5], color);
+}
+
 void Renderer::drawGround(const Camera& camera, Transform tr = Transform()) {
 
 	ground.material.setShaderOptions(camera, sun, Transform(
@@ -249,6 +311,21 @@ void Renderer::drawGround(const Camera& camera, Transform tr = Transform()) {
 		ground.transform.scale * tr.scale));
 
 	renderQ.push(&ground);
+}
+
+void Renderer::drawSkybox(const Camera& camera) {
+	skybox.transform.position = camera.Position;
+	skybox.transform.scale = vec3(2.0f);
+
+	skybox.material.sh->use();
+	skybox.material.setShaderOptions(camera, Renderer::sun, skybox.transform);
+
+	glBindVertexArray(skybox.VAO);
+
+	glCullFace(GL_BACK);
+	glDrawElements(GL_TRIANGLES, skybox.n_index, GL_UNSIGNED_INT, 0);
+
+	glBindVertexArray(0);
 }
 
 // obsolete
@@ -388,8 +465,16 @@ void Renderer::drawFrame(Camera& currentCamera, int FRAME_WIDTH, int FRAME_HEIGH
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClearColor(0.46, 0.46, 0.46, 1.0);
 
-	drawGrid(currentCamera);
-	drawGizmo(currentCamera);
+
+	glFrontFace(GL_CW);
+	drawSkybox(currentCamera);
+	glClear(GL_DEPTH_BUFFER_BIT);
+	glFrontFace(GL_CCW);
+
+	if (drawGizmos) {
+		drawGrid(currentCamera);
+		drawGizmo(currentCamera);
+	}
 	
 	glViewport(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
 
@@ -398,7 +483,7 @@ void Renderer::drawFrame(Camera& currentCamera, int FRAME_WIDTH, int FRAME_HEIGH
 	while (!renderQ.empty()) {
 		RenderObject* cur = renderQ.front();
 
-		//if(renderQ.size() > 1) drawGizmo(currentCamera, cur->transform);
+		if(renderQ.size() > 1 and drawGizmos) drawGizmo(currentCamera, cur->transform);
 
 		RenderTriangles(*cur, currentCamera, false);
 

@@ -10,6 +10,11 @@
 
 #include "MainProgram.h"
 
+#define MOVE_BEZIER 5
+#define FREELOOK 3
+#define COMPSHADERS 0
+#define MOO 2
+
 class MainWindow
 {
 	static bool is_open_bool;
@@ -23,19 +28,21 @@ class MainWindow
 
 public:
 
-	static float paramsf[8];
-	static int paramsi[8];
-	static bool is_pressed[6];
-	static GLFWwindow* window;
-	static GLuint viewport_tex;
-	static int SCR_WIDTH;
-	static int SCR_HEIGHT;
-	static int initUI();
-	static void RenderUI();
-	static void cleanupUI();
-	static int is_open();
-	static void handle_input(GLFWwindow* window, float _speed);
-	static void drawViewport();
-	static void drawOptions();
+	static float		paramsf[8];
+	static int			paramsi[8];
+	static bool			paramsb[8];
+	static bool			is_pressed[6];
+	static GLFWwindow*	window;
+	static GLuint		viewport_tex;
+	static int			SCR_WIDTH;
+	static int			SCR_HEIGHT;
+
+	static int	initUI();
+	static void	RenderUI();
+	static void	cleanupUI();
+	static int	is_open();
+	static void	handle_input(GLFWwindow* window, float _speed);
+	static void	drawViewport();
+	static void	drawOptions();
 };
 

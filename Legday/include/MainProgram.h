@@ -20,6 +20,11 @@
 #include "IKleg.h"
 #include "SpiderTank.h"
 
+#define MOVE_BEZIER 5
+#define FREELOOK 3
+#define COMPSHADERS 0
+#define MOO 2
+
 using namespace std;
 
 class MainProgram

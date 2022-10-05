@@ -78,7 +78,7 @@ void main()
     vec4 Ia = vec4(0.0,0.0,0.0,1.0);
 
     vec4 glossy_factor =  Ks * I * pow(max(0.0,dot(r,v)), q * 32.0) * shadowTest(fragPosLightSpace);
-    vec4 diffuse_factor = Kd * I * (max(0.0, dot(n, l)) + 0.3) * max(0.2,shadowTest(fragPosLightSpace));
+    vec4 diffuse_factor = Kd * I * (max(0.3, dot(n, l))) * max(0.2,shadowTest(fragPosLightSpace));
     vec4 ambient_factor = Ka * Ia; 
     vec4 reflection_factor;
 

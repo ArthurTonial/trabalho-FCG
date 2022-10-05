@@ -3,8 +3,9 @@
 int MainWindow::SCR_WIDTH = 1500;
 int MainWindow::SCR_HEIGHT = 1000;
 bool MainWindow::is_open_bool;
-float MainWindow::paramsf[8] = {150.0, 30.0, 0.5, 1.0, 2.5, 2.5, 1.7, 5.5};
+float MainWindow::paramsf[8] = {250.0, 15.0, 0.5, 1.0, 2.5, 1.4, 2.0, 5.5};
 int MainWindow::paramsi[8] = {2, 0, 0, 0, 0, 0, 0, 0};
+bool MainWindow::paramsb[8] = { false,false, false, false, false, false, false, false };
 bool MainWindow::is_pressed[6] = { false, false ,false ,false ,false ,false };
 GLFWwindow* MainWindow::window;
 GLuint MainWindow::viewport_tex;
@@ -125,14 +126,21 @@ void MainWindow::handle_input(GLFWwindow* window, float _speed) {
 	}
 	else is_pressed[5] = false;
 
+	if (ImGui::IsKeyPressed(ImGuiKey_DownArrow)) {
+		Scene::mainCamera->ProcessMouseScroll(-1.0f);
+	}
+	if (ImGui::IsKeyPressed(ImGuiKey_UpArrow)) {
+		Scene::mainCamera->ProcessMouseScroll(1.0f);
+	}
+
 	if (ImGui::IsKeyDown(ImGuiKey_Space)) {
 	}
 	if (ImGui::IsKeyDown(ImGuiKey_LeftShift)) {
 	}
 
 	if (ImGui::IsKeyPressed(ImGuiKey_Escape)) {
-		MainProgram::state ^= (1 << 3);
-		if ((MainProgram::state >> 3) & 1) {
+		MainProgram::state ^= (1 << FREELOOK);
+		if ((MainProgram::state >> FREELOOK) & 1) {
 			glfwSetInputMode(MainWindow::window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		}
 		else {
@@ -143,14 +151,14 @@ void MainWindow::handle_input(GLFWwindow* window, float _speed) {
 	
 
 	if (ImGui::IsKeyPressed('B')) {
-		MainProgram::state ^= (1 << 5);
+		MainProgram::state ^= (1 << MOVE_BEZIER);
 	}
 
 	// imgui mouse
 	if (ImGui::IsMouseDown(ImGuiMouseButton_Right)) {
 		Renderer::sun.ProcessMouseMovement(io.MouseDelta.x, io.MouseDelta.y);
 	}
-	if ((MainProgram::state >> 3) & 1) {
+	if ((MainProgram::state >> FREELOOK) & 1) {
 		Scene::mainCamera->ProcessMouseMovement(io.MouseDelta.x, -io.MouseDelta.y, true);
 	}
 	else {
@@ -158,7 +166,6 @@ void MainWindow::handle_input(GLFWwindow* window, float _speed) {
 			Scene::mainCamera->ProcessMouseMovement(io.MouseDelta.x, -io.MouseDelta.y, true);
 		}
 	}
-
 
 }
 
@@ -199,18 +206,19 @@ void MainWindow::drawOptions() {
 
 
 	if (Button("Comp Shaders", ImVec2(150.0f, 50.0f))) {
-		MainProgram::state ^= (1 << 0);
+		MainProgram::state ^= (1 << COMPSHADERS);
 	}
 	if (Button("Moooo", ImVec2(150.0f, 50.0f))) {
-		MainProgram::state ^= (1 << 2);
+		MainProgram::state ^= (1 << MOO);
 	}
+	Checkbox("Draw Gizmos", &paramsb[0]);
 
 	SliderFloat("Sun nearplane", &paramsf[0], 10.0, 1000.0, "%.2f");
 	SliderFloat("Sun fov", &paramsf[1], 5.0, 50.0, "%.5f");
 	SliderFloat("Bezier Path Speed", &paramsf[2], 0.0, 1.0, "%.5f");
 	SliderFloat("Bezier Path Size", &paramsf[3], 1.0, 10.0, "%.5f");
 	//SliderInt("N Segs", &paramsi[0], 2, 6);
-	SliderFloat("Leg Spread", &paramsf[5], 0.5f, 10.0f, "%.5f");
+	SliderFloat("Leg Spread", &paramsf[5], 0.01f, 10.0f, "%.5f");
 	SliderFloat("Follow Dist", &paramsf[6], 0.0f, 5.0f, "%.5f");
 	//SliderFloat("stateZ", &paramsf[7], -10.0f, 10.0f, "%.5f");
 
