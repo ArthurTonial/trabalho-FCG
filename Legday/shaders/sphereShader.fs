@@ -98,5 +98,7 @@ void main()
     //vec2 customUV = vec2(0.0);
     
     FragColor = unlit + vec4(2.0) * pow(max(0.0,dot(ref,v)), 12.0) * shadowTest(fragPosLightSpace);
-    //FragColor = whisps + vec4(2.0) * pow(max(0.0,dot(ref,v)), 12.0) * shadowTest(fragPosLightSpace);
+     if(selected > 0.5f){
+        FragColor = vertexColor;
+    }
 }

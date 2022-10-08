@@ -15,6 +15,9 @@
 
 #include "camera.h"
 
+// essa classe foi inteiramente retirada do site learnopengl.com
+// FONTE
+// https://learnopengl.com/Getting-started/Shaders
 
 class Shader
 {

@@ -133,6 +133,20 @@ public:
 
 			if (debugMode)Renderer::drawLine(*Scene::mainCamera, averageNormal(), transform.position, 5.0f, vec4(1.0, 0.0, 1.0, 1.0));
 
+			// test cube colision
+
+			ColAttribs cubeCol = Collision::testSphereAABBCollision(5.0f, transform, *((CubeObject*)Scene::objects[2])->objectCollision.root_aabb);
+			if (cubeCol.l >= 0.0f) {
+				transform.position += (cubeCol.l * cubeCol.n);
+			}
+
+			// test sphere colision
+
+			ColAttribs sphereCol = Collision::testSphereSphereCollision(5.0f, transform, 10.0f, ((CubeObject*)Scene::objects[3])->transform);
+			if (sphereCol.l >= 0.0f) {
+				transform.position += (sphereCol.l * sphereCol.n);
+			}
+
 			updateLegs();
 		}
 		lastTime = glfwGetTime();
@@ -232,7 +246,11 @@ public:
 				rays[r] = Ray(r_o, LegTarget[i][r]);
 			}
 
-			ColAttribs colisions[3];
+			ColAttribs colisions[3] = {
+				{-1.0f, vec3(0.0)},
+				{-1.0f, vec3(0.0)},
+				{-1.0f, vec3(0.0)}
+			};
 			for (int c = 0; c < 3; c++) {
 				colisions[c] = ((CubeObject*)Scene::objects[1])->objectCollision.testCollisionRay(rays[c]);
 				
@@ -255,12 +273,13 @@ public:
 			vec3 target2 = rays[2].start + rays[2].direction * colisions[2].l;
 			vec3 target = target0;
 
+			/*
 			vec3 legRoot = ((IKleg*)components[i + 2])->getTrueTransform().position;
 			float legLen = ((IKleg*)components[i + 2])->legLength;
 
-			if (length(target - legRoot) > legLen) target = target1;
-			if (length(target - legRoot) > legLen) target = target2;
-
+			if (length(target) > legLen) target = target1;
+			if (length(target) > legLen) target = target2;
+			*/
 
 			if (legState[i].fetch) interpolateLeg(i, target);
 			else if (length(target - curLegPos[i]) > follow_dist and (upLegs & (1 << i))) {

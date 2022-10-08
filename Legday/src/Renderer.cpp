@@ -1,6 +1,7 @@
 #include "Renderer.h"
 
 float Material::time;
+bool Renderer::gourand = false;
 RenderObject Renderer::grid;
 RenderObject Renderer::gizmo;
 RenderObject Renderer::ground;
@@ -118,10 +119,10 @@ void Renderer::generateGround(Transform transform) {
 	};
 
 	vector<GLfloat> v_normals = {
-		0.0f, -1.0f, 0.0f, 0.0f,
-		0.0f, -1.0f, 0.0f, 0.0f,
-		0.0f, -1.0f, 0.0f, 0.0f,
-		0.0f, -1.0f, 0.0f, 0.0f
+		0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f
 	};
 
 	vector<GLfloat> v_uvs = {
@@ -136,7 +137,7 @@ void Renderer::generateGround(Transform transform) {
 		1, 2, 3
 	};
 
-	groundShader = Shader("shaders/pbr.vs", "shaders/ground.fs");
+	groundShader = Shader("shaders/ground.vs", "shaders/ground.fs");
 
 	ground = RenderObject(Material(1.0f, 1.0f, 0.0f, vec4(1.0f, 1.0f, 1.0f, 1.0f), vec4(1.0f, 1.0f, 1.0f, 1.0f), &groundShader), v_ground, v_normals, i_ground, v_uvs, transform);
 }
@@ -303,16 +304,6 @@ void Renderer::drawAABB(const Camera& camera, vec3 bb_min, vec3 bb_max, vec4 col
 	drawLine(camera, v[4], v[5], color);
 }
 
-void Renderer::drawGround(const Camera& camera, Transform tr = Transform()) {
-
-	ground.material.setShaderOptions(camera, sun, Transform(
-		tr.position + (tr.rotation * (tr.scale * ground.transform.position)),
-		tr.rotation * ground.transform.rotation,
-		ground.transform.scale * tr.scale));
-
-	renderQ.push(&ground);
-}
-
 void Renderer::drawSkybox(const Camera& camera) {
 	skybox.transform.position = camera.Position;
 	skybox.transform.scale = vec3(2.0f);
@@ -405,6 +396,13 @@ void Renderer::RenderTriangles(RenderObject& ro, const Camera& camera, bool draw
 	
 	ro.material.sh->use();
 	ro.material.setShaderOptions(camera, Renderer::sun, ro.transform);
+
+	if (gourand) {
+		ro.material.sh->setFloat("selected", 1.0f);
+	}
+	else {
+		ro.material.sh->setFloat("selected", 0.0f);
+	}
 
 	glBindVertexArray(ro.VAO);
 	

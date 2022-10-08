@@ -6,6 +6,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
 
+// a classe camera apesar de muito modificada foi feita em cima da classe disponibilizada pelo site learnopengl.com
+// FONTE
+// https://learnopengl.com/Getting-started/Camera
+
 // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
 enum Camera_Movement {
 	FORWARD,
@@ -72,14 +76,127 @@ public:
 		updateCameraVectors();
 	}
 
+	static glm::mat4 Matrix(
+		float m00, float m01, float m02, float m03, // LINHA 1
+		float m10, float m11, float m12, float m13, // LINHA 2
+		float m20, float m21, float m22, float m23, // LINHA 3
+		float m30, float m31, float m32, float m33  // LINHA 4
+	)
+	{
+		return glm::mat4(
+			m00, m10, m20, m30, // COLUNA 1
+			m01, m11, m21, m31, // COLUNA 2
+			m02, m12, m22, m32, // COLUNA 3
+			m03, m13, m23, m33  // COLUNA 4
+		);
+	}
+
+	static glm::mat4 Matrix_Camera_View(glm::vec3 pos, glm::vec3 view_vector, glm::vec3 up_vector)
+	{
+		glm::vec3 w = -view_vector;
+		glm::vec3 u = glm::cross(up_vector, w);
+
+		// Normalizamos os vetores u e w
+		w = glm::normalize(w);
+		u = glm::normalize(u);
+
+		glm::vec3 v = glm::cross(w, u);
+
+		glm::vec4 origin_o = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+		glm::vec4 position_c = glm::vec4(pos, 1.0f);
+
+		float ux = u.x;
+		float uy = u.y;
+		float uz = u.z;
+		float vx = v.x;
+		float vy = v.y;
+		float vz = v.z;
+		float wx = w.x;
+		float wy = w.y;
+		float wz = w.z;
+
+		glm::mat4 m = Matrix(
+			ux, uy, uz, -glm::dot(glm::vec4(u, 0.0f), position_c - origin_o),
+			vx, vy, vz, -glm::dot(glm::vec4(v, 0.0f), position_c - origin_o),
+			wx, wy, wz, -glm::dot(glm::vec4(w, 0.0f), position_c - origin_o),
+			0.0f, 0.0f, 0.0f, 1.0f
+		);
+
+		return m;
+	}
+
 	// returns the view matrix calculated using Euler Angles and the LookAt Matrix
 	glm::mat4 GetViewMatrix() const
 	{
-		return glm::lookAt(Position, Position + Front, Up);
+		glm::vec3 w = -Front;
+		glm::vec3 u = glm::cross(WorldUp, w);
+
+		// Normalizamos os vetores u e w
+		w = glm::normalize(w);
+		u = glm::normalize(u);
+
+		glm::vec3 v = glm::cross(w, u);
+
+		glm::vec4 origin_o = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+		glm::vec4 position_c = glm::vec4(Position, 1.0f);
+
+		float ux = u.x;
+		float uy = u.y;
+		float uz = u.z;
+		float vx = v.x;
+		float vy = v.y;
+		float vz = v.z;
+		float wx = w.x;
+		float wy = w.y;
+		float wz = w.z;
+
+		glm::mat4 m = Matrix(
+			ux, uy, uz, -glm::dot(glm::vec4(u, 0.0f), position_c - origin_o),
+			vx, vy, vz, -glm::dot(glm::vec4(v, 0.0f), position_c - origin_o),
+			wx, wy, wz, -glm::dot(glm::vec4(w, 0.0f), position_c - origin_o),
+			0.0f, 0.0f, 0.0f, 1.0f
+		);
+
+		return m;
+	}
+
+	// Matriz de projeção paralela ortográfica
+	static glm::mat4 Matrix_Orthographic(float l, float r, float b, float t, float n, float f)
+	{
+		glm::mat4 M = Matrix(
+			2.0f / (r - l), 0.0f, 0.0f, -(r + l) / (r - l),
+			0.0f, 2.0f / (t - b), 0.0f, -(t + b) / (t - b),
+			0.0f, 0.0f, 2.0f / (f - n), -(f + n) / (f - n),
+			0.0f, 0.0f, 0.0f, 1.0f
+		);
+
+		return M;
 	}
 
 	glm::mat4 GetProjectionMatrix() const {
-		return  glm::perspective(glm::radians(Zoom), ScreenRatio, 0.1f, 500.0f);
+		float n = 0.1f;
+		float f = 500.0f;
+		float field_of_view = 3.141592 / 3.0f;
+		float t = fabs(n) * tanf(glm::radians(ZOOM) / 2.0f);
+		float b = -t;
+		float r = t * ScreenRatio;
+		float l = -r;
+
+		glm::mat4 P = Matrix(
+			n, 0.0f, 0.0f, 0.0f,
+			0.0f, n, 0.0f, 0.0f,
+			0.0f, 0.0f, n + f, -f * n,
+			0.0f, 0.0f, 1.0f, 0.0f
+		);
+
+		// A matriz M é a mesma computada acima em Matrix_Orthographic().
+		glm::mat4 M = Matrix_Orthographic(l, r, b, t, n, f);
+		
+		glm::mat4 m = M * P;
+		m[2][3] *= -1;
+		m[2][2] *= -1;
+		
+		return m;
 	}
 
 

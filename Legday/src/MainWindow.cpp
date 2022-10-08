@@ -3,7 +3,7 @@
 int MainWindow::SCR_WIDTH = 1500;
 int MainWindow::SCR_HEIGHT = 1000;
 bool MainWindow::is_open_bool;
-float MainWindow::paramsf[8] = {250.0, 15.0, 0.5, 1.0, 2.5, 1.4, 2.0, 5.5};
+float MainWindow::paramsf[8] = {250.0, 15.0, 0.5, 1.0, 2.5, 3.0, 2.0, 5.5};
 int MainWindow::paramsi[8] = {2, 0, 0, 0, 0, 0, 0, 0};
 bool MainWindow::paramsb[8] = { false,false, false, false, false, false, false, false };
 bool MainWindow::is_pressed[6] = { false, false ,false ,false ,false ,false };
@@ -212,6 +212,7 @@ void MainWindow::drawOptions() {
 		MainProgram::state ^= (1 << MOO);
 	}
 	Checkbox("Draw Gizmos", &paramsb[0]);
+	Checkbox("Gouraud Shading", &paramsb[1]);
 
 	SliderFloat("Sun nearplane", &paramsf[0], 10.0, 1000.0, "%.2f");
 	SliderFloat("Sun fov", &paramsf[1], 5.0, 50.0, "%.5f");

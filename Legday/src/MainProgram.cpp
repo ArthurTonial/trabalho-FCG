@@ -108,24 +108,38 @@ void MainProgram::init() {
 	// ------------------------------ TEST --------------------------------------------------//
 	SpiderTank* myTank = new SpiderTank(0, 6);
 	myTank->controlCamera = true;
-
-	Scene::objects.push_back(myTank);
-
 	myTank->pc->is_pressed = MainWindow::is_pressed;
 	myTank->pc->speed = 10.0f;
 	myTank->pc->acc = myTank->pc->speed * 4;
 	myTank->pc->damp = 3.0f;
+	Scene::objects.push_back(myTank);
 
-	myTank->transform.position = vec3(0.0, 1.5, 0.0);
-	myTank->build(MainWindow::paramsi[0]);
-	myTank->transform.lookAt(vec3(0.0, 0.0, 1.0));
 
 	CubeObject* walkable = new CubeObject(1);
 	walkable->transform.scale = vec3(200.0, 200.0, 200.0);
-	//walkable->transform.lookAt(vec3(1.0,1.0,0.0));
-	walkable->transform.position += vec3(0.0, -10.0, 50.0);
+	walkable->transform.position += vec3(0.0, -10.0, 100.0);
 	walkable->objectCollision = CollisionObject(walkable->objectMesh, walkable->transform);
 	Scene::objects.push_back(walkable);
+
+	CubeObject* justACube = new CubeObject(2);
+	justACube->transform.scale = vec3(10.0, 10.0, 10.0);
+	justACube->transform.position += vec3(20.0, 0.0, 0.0);
+	justACube->objectMesh = new Mesh("meshes/unitCube.obj");
+	justACube->ms->setMesh(justACube->objectMesh);
+	justACube->objectCollision = CollisionObject(justACube->objectMesh, justACube->transform);
+	Scene::objects.push_back(justACube);
+
+	CubeObject* justASphere = new CubeObject(3);
+	justASphere->transform.scale = vec3(10.0, 10.0, 10.0);
+	justASphere->transform.position += vec3(-20.0, 0.0, 0.0);
+	justASphere->objectMesh = new Mesh("meshes/sphere.obj");
+	justASphere->ms->setMesh(justASphere->objectMesh);
+	justASphere->objectCollision = CollisionObject(justASphere->objectMesh, justASphere->transform);
+	Scene::objects.push_back(justASphere);
+
+	myTank->transform.position = vec3(0.0,1.5,0.0);
+	myTank->build(MainWindow::paramsi[0]);
+	myTank->transform.lookAt(vec3(0.0, 0.0, 1.0));
 
 	// ------------------------------ TEST --------------------------------------------------//
 	
@@ -150,6 +164,7 @@ void MainProgram::run() {
 		Renderer::drawGizmos = MainWindow::paramsb[0];
 		st->debugMode = MainWindow::paramsb[0];
 		obstacle->debugMode = MainWindow::paramsb[0];
+		Renderer::gourand = MainWindow::paramsb[1];
 
 		Renderer::drawGizmos = MainWindow::paramsb[0];
 

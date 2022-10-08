@@ -61,7 +61,7 @@ float shadowTest(vec4 fPosLSpace){
 void main()
 {
     vec4 l = -sun_direction;
-    vec4 n = -normalize(vertexNormal);
+    vec4 n = normalize(vertexNormal);
     vec4 p = vertexPos;
     vec4 v = normalize(camera_position - p);
 
@@ -69,7 +69,7 @@ void main()
 
     vec2 customUV = texcoords * 10.0f;
 
-    float q = texture(TextureImage5, customUV).r;
+    float q = 30.0f;
 
     vec4 Kd = texture(TextureImage4, customUV);
     vec4 Ks = vec4(1.0,1.0,1.0,1.0);
@@ -78,14 +78,15 @@ void main()
     vec4 I = light_color;
     vec4 Ia = vec4(0.0,0.0,0.0,1.0);
 
-    vec4 glossy_factor =  Ks * I * pow(max(0.0,dot(r,v)), q * 15.0) * shadowTest(fragPosLightSpace) * (q * q);
+    vec4 glossy_factor =  Ks * I * pow(max(0.0,dot(r,v)), q) * shadowTest(fragPosLightSpace);
     vec4 diffuse_factor = Kd * I * (max(0.3, 1.0+dot(n, l))) * max(0.2,shadowTest(fragPosLightSpace));
     vec4 ambient_factor = Ka * Ia; 
     vec4 reflection_factor;
 
     //diffuse_factor = diffuse_color * pow(max(0.0, dot(vertexNormal,camera_vector)), 3);
 
-    FragColor = max(diffuse_factor + glossy_factor + ambient_factor, selected * vec4(1.0,1.0,0.5,1.0));
-    //FragColor = diffuse_factor;
-    //FragColor = (inverse(transpose(mode_m)) * texture(TextureImage3, texcoords));
+    FragColor = diffuse_factor + glossy_factor + ambient_factor;
+    if(selected > 0.5f){
+        FragColor = vertexColor;
+    }
 }

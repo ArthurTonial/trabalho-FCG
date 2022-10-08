@@ -84,6 +84,8 @@ void main()
 
     //diffuse_factor = diffuse_color * pow(max(0.0, dot(vertexNormal,camera_vector)), 3);
 
-    FragColor = max(diffuse_factor + glossy_factor + ambient_factor, selected * vec4(1.0,1.0,0.5,1.0));
-    //FragColor = (inverse(transpose(mode_m)) * texture(TextureImage3, texcoords));
+    FragColor = diffuse_factor + glossy_factor + ambient_factor;
+    if(selected > 0.5f){
+        FragColor = vertexColor;
+    }
 }
